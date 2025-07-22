@@ -9,6 +9,8 @@ setup-secure-zsh.sh
 .*install.*\.sh$  # install scripts
 .*deploy.*\.sh$   # deployment scripts
 test-.*\.sh$      # test scripts
+smoke-test\.sh$   # smoke test script
+validate\.sh$     # validation script
 
 # ===== Documentation (keep local only) =====
 pass-setup.md
