@@ -22,10 +22,15 @@ ZSH_THEME=""
 # ===== Pure Theme Setup =====
 # Pure theme: Minimal, fast, and works without special fonts
 # Alternative: Remove this section and set ZSH_THEME="robbyrussell" above for default
-fpath+="$ZSH/custom/themes/pure"
-autoload -U promptinit; promptinit
-# Load pure theme with error suppression for hook warnings (known issue)
-prompt pure 2>/dev/null || prompt pure
+if [[ -d "$ZSH/custom/themes/pure" ]]; then
+    fpath+="$ZSH/custom/themes/pure"
+    autoload -U promptinit; promptinit
+    # Load pure theme with error suppression for hook warnings (known issue)
+    prompt pure 2>/dev/null
+else
+    # Fallback to oh-my-zsh default theme if Pure isn't available
+    ZSH_THEME="robbyrussell"
+fi
 
 # Load essential plugins only (minimal for fast startup)
 # CUSTOMIZE: Add plugins like (git docker aws kubectl) but watch startup time

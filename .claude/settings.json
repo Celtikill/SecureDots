@@ -1,7 +1,13 @@
 {
-  "model": "claude-3-5-sonnet-20241022",
-  "permissions": {
-    "defaultMode": "acceptEdits"
+  "model": "sonnet",
+  "tools": {
+    "enabled": true
   },
-  "enabledMcpjsonServers": ["memory"]
+  "memory": {
+    "enabled": true
+  },
+  "security": {
+    "allow_dangerous_tools": false,
+    "require_confirmation": true
+  }
 }
