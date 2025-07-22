@@ -1,0 +1,133 @@
+# ===== Setup Scripts (keep local only) =====
+TROUBLESHOOTING.md
+gpg-mgmnt.md
+gpg-ssh-auth.md
+fix-conda-installation.sh
+install-omz.sh
+setup-secure-zsh.sh
+.*setup.*\.sh$    # setup scripts
+.*install.*\.sh$  # install scripts
+.*deploy.*\.sh$   # deployment scripts
+test-.*\.sh$      # test scripts
+
+# ===== Documentation (keep local only) =====
+pass-setup.md
+^/README.*
+^/LICENSE.*
+^/COPYING
+
+# ===== Version Control Systems =====
+RCS
+.+,v
+CVS
+\.\#.+       # CVS conflict files / emacs lock files
+\.cvsignore
+\.svn
+_darcs
+\.hg
+\.git
+\.gitignore
+\.gitmodules
+
+# ===== Editor Backup/Temp Files =====
+.+~          # emacs backup files
+\#.*\#       # emacs autosave files
+\.bak$       # backup files
+\.backup$    # backup files
+\.orig$      # original files
+\.tmp$       # temporary files
+\.swp$       # vim swap files
+\.swo$       # vim swap files
+\#.*         # various temp files
+
+# ===== AWS Security =====
+\.aws/credentials
+\.aws/config\.bak
+\.aws/.*\.bak
+\.aws/.*\.backup
+\.aws/.*\.tmp
+
+# ===== GPG Security =====
+private-key-backup\.gpg
+secring\.*
+pubring\.gpg~
+secring\.gpg~
+\.gnupg/private-keys-v1\.d/.*
+\.gnupg/openpgp-revocs\.d/.*
+
+# ===== Pass Password Manager Security =====
+\.password-store/.*      # Pass store directory
+\.password-store\.git/.* # Pass git repository
+.*\.password-store.*     # Pass backup files
+pass-backup\.gpg         # Pass backups
+pass-export\..*          # Pass exports
+\.passrc                 # Pass config
+pass-.*\.txt             # Pass text exports
+pass-.*\.csv             # Pass CSV exports
+pass-.*\.json            # Pass JSON exports
+
+# ===== Claude AI Security =====
+\.claude/.*credentials.*
+\.claude/.*token.*
+\.claude/.*api.*key.*
+\.claude/settings\.local\.json
+\.claude/shell-snapshots
+
+# ===== SSH Security =====
+id_rsa$          # SSH private keys
+id_dsa$          # SSH private keys
+id_ecdsa$        # SSH private keys
+id_ed25519$      # SSH private keys
+.*_rsa$          # SSH private keys
+.*_dsa$          # SSH private keys
+.*_ecdsa$        # SSH private keys
+.*_ed25519$      # SSH private keys
+\.ssh/.*_rsa$    # SSH private keys in .ssh
+\.ssh/.*_dsa$    # SSH private keys in .ssh
+\.ssh/.*_ecdsa$  # SSH private keys in .ssh
+\.ssh/.*_ed25519$ # SSH private keys in .ssh
+
+# ===== Database Security =====
+.*\.sql$         # SQL dumps
+.*\.dump$        # Database dumps
+.*\.backup$      # Database backups
+.*\.db$          # Database files
+.*\.sqlite$      # SQLite databases
+.*\.sqlite3$     # SQLite databases
+database\..*     # Database config files
+
+# ===== Browser Security =====
+\.mozilla/firefox/.*\.default/key.*\.db
+\.mozilla/firefox/.*\.default/logins\.json
+\.mozilla/firefox/.*\.default/signons\.sqlite
+Library/Application\ Support/Google/Chrome/Default/Login\ Data
+Library/Application\ Support/Google/Chrome/Default/Cookies
+\.config/google-chrome/Default/Login\ Data
+\.config/google-chrome/Default/Cookies
+
+# ===== Common Sensitive Patterns =====
+.*\.key$     # key files
+.*\.pem$     # certificate files (if not intentional)
+.*\.p12$     # certificate bundles
+.*\.pfx$     # certificate bundles
+.*\.crt$     # certificates (if sensitive)
+\.env$       # environment files
+\.env\..*    # environment files
+.*password.*
+.*secret.*
+.*token.*
+.*\.log$     # log files
+credentials\.*   # credential files
+auth\..*         # authentication files
+
+# ===== Config Directory Security =====
+# Allow .config directory but exclude sensitive patterns within it
+\.config/.*/.*credentials.*
+\.config/.*/.*secret.*
+\.config/.*/.*token.*
+\.config/.*/.*password.*
+
+# ===== Platform-Specific Files =====
+# Conda environments contain platform-specific paths
+\.conda/environments\.txt
+
