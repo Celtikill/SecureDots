@@ -311,8 +311,43 @@ rm -rf ~/.oh-my-zsh
 
 ### Theme and Display Issues
 
+#### Pure Theme Issues (Most Common)
+
 **Symptoms:**
-- Strange characters in prompt (boxes, question marks)
+- "Usage: prompt (options)" error on shell startup
+- Prompt shows default macOS/Linux prompt instead of Pure theme
+- Error messages about unknown `prompt` command
+
+**Root Cause:** Pure theme not installed or not accessible to zsh
+
+**Solutions:**
+```bash
+# 1. Check if Pure theme exists
+ls ~/.oh-my-zsh/custom/themes/pure/
+# Should show: pure.zsh, async.zsh, README.md
+
+# 2. If directory is empty/missing, install Pure theme
+./setup/install-pure-theme.sh
+
+# Or manually:
+git clone https://github.com/sindresorhus/pure.git ~/.oh-my-zsh/custom/themes/pure
+
+# 3. Verify .zshrc has fallback protection (should be automatic)
+grep -A5 "Pure Theme Setup" ~/.zshrc
+
+# 4. Restart shell
+exec zsh
+```
+
+**macOS-specific notes:**
+- macOS has its own built-in `prompt` command that conflicts with Pure
+- Our configuration includes fallback protection to prevent this issue
+- If you still see errors, ensure Oh My Zsh is properly installed
+
+#### Other Theme Issues
+
+**Symptoms:**
+- Strange characters in prompt (boxes, question marks) 
 - Agnoster theme not displaying properly
 - AWS profile not showing in prompt
 
@@ -320,15 +355,18 @@ rm -rf ~/.oh-my-zsh
 ```bash
 # Check terminal capabilities
 echo "256-color: ${TERMINAL_HAS_256_COLOR:-unknown}"
-echo "Unicode: ${TERMINAL_HAS_UNICODE:-unknown}"
+echo "Unicode: ${TERMINAL_HAS_UNICODE:-unknown}" 
 echo "Powerline: ${TERMINAL_HAS_POWERLINE:-unknown}"
 
-# Install powerline fonts
+# Install powerline fonts (for Agnoster theme)
 install_powerline_fonts
 
 # Force theme selection
 export TERMINAL_HAS_POWERLINE=false  # Force robbyrussell
 export TERMINAL_HAS_POWERLINE=true   # Force agnoster (if fonts available)
+
+# Switch to Pure theme (recommended)
+# See USER-GUIDE.md -> Shell Theme Configuration
 
 # Restart shell
 exec zsh
@@ -336,7 +374,7 @@ exec zsh
 
 **Font Installation per Platform:**
 - **macOS**: `brew install font-fira-code-nerd-font`
-- **Ubuntu/Debian**: `apt-get install fonts-powerline fonts-firacode`
+- **Ubuntu/Debian**: `apt-get install fonts-powerline fonts-firacode` 
 - **WSL**: Install fonts in Windows and configure Windows Terminal
 
 ### AWS Profile Display Issues

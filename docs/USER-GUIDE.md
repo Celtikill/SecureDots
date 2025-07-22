@@ -21,6 +21,7 @@
 - [Common Tasks](#common-tasks)
   - [Managing AWS Credentials](#managing-aws-credentials)
   - [Working with GPG and Pass](#working-with-gpg-and-pass)
+  - [Shell Theme Configuration](#shell-theme-configuration)
 - [Troubleshooting](#troubleshooting)
 - [Migration Guide](#migration-guide)
 - [Support Resources](#support-resources)
@@ -419,6 +420,91 @@ source ~/.zshrc
 type aws_check
 type dotfiles_help
 ```
+
+## Shell Theme Configuration
+
+### Understanding Pure Theme
+
+SecureDots uses the [Pure theme](https://github.com/sindresorhus/pure) by default for the zsh prompt. Pure is chosen for its:
+
+- **🎨 Minimalist design** - Clean, distraction-free prompt
+- **⚡ Performance** - Fast loading, no special fonts required  
+- **🔧 Reliability** - Works across all terminals and platforms
+- **🔍 Useful information** - Shows git status, command duration, etc.
+
+### Automated Installation
+
+Pure theme is automatically installed during setup:
+
+```bash
+# Simple setup includes Pure theme
+./setup/setup-simple.sh
+
+# Manual Pure theme installation (if needed)
+./setup/install-pure-theme.sh
+```
+
+### Manual Configuration
+
+If you need to manually configure Pure theme or the automated installation fails:
+
+<details>
+<summary>🔧 Manual Pure Theme Setup</summary>
+
+**Prerequisites:**
+- Oh My Zsh must be installed first
+- Internet connection for downloading theme
+
+**Steps:**
+
+1. **Install Pure theme to Oh My Zsh:**
+   ```bash
+   git clone https://github.com/sindresorhus/pure.git ~/.oh-my-zsh/custom/themes/pure
+   ```
+
+2. **Verify installation:**
+   ```bash
+   ls ~/.oh-my-zsh/custom/themes/pure/
+   # Should show: pure.zsh, async.zsh, README.md, etc.
+   ```
+
+3. **Reload shell configuration:**
+   ```bash
+   source ~/.zshrc
+   ```
+
+**Troubleshooting:**
+- If you see "Usage: prompt (options)" error, the Pure theme directory doesn't exist
+- Run the manual installation steps above, then restart your terminal
+- Check [Troubleshooting Guide](guides/TROUBLESHOOTING.md#theme-and-display-issues) for additional theme issues
+
+</details>
+
+### Alternative Themes
+
+If Pure theme doesn't meet your needs, you can switch to Oh My Zsh's built-in themes:
+
+<details>
+<summary>🎯 Switching to Alternative Themes</summary>
+
+**Quick switch to robbyrussell (Oh My Zsh default):**
+
+1. Edit `~/.zshrc` and modify the theme configuration:
+   ```bash
+   # Comment out Pure theme section and set:
+   ZSH_THEME="robbyrussell"
+   ```
+
+2. Reload: `source ~/.zshrc`
+
+**Popular alternatives:**
+- `robbyrussell` - Simple, reliable default
+- `agnoster` - Powerline style (requires special fonts)
+- `spaceship` - Feature-rich (requires additional setup)
+
+**Note:** Some themes require powerline fonts or additional configuration. Pure theme is recommended for its simplicity and reliability.
+
+</details>
 
 ### Get Help
 
