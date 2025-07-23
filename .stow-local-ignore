@@ -17,6 +17,16 @@ pass-setup.md
 ^/README.*
 ^/LICENSE.*
 ^/COPYING
+CLAUDE.md
+TEMPLATE.md
+QUICK-REFERENCE.md
+SECURITY.md
+README.md
+LICENSE
+
+# ===== Directories =====
+setup
+docs
 
 # ===== Version Control Systems =====
 RCS
