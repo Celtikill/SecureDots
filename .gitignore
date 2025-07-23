@@ -1,17 +1,7 @@
 *.swp
 
-# Claude Code personal configuration (not the project-level CLAUDE.md)
-.claude/settings.local.json
-.claude/projects*
-.claude/statsig*
-.claude/todos*
-.claude/.credentials.json
-.claude/shell-snapshots
-
-# Personal Claude instructions (project-level CLAUDE.md is committed)
-CLAUDE.local.md
-.claude/CLAUDE.personal.md
-.claude/CLAUDE.md
+# Claude Code - all files managed with alternate system
+.claude/
 
 # Backup files and directories created by setup scripts
 *backup*

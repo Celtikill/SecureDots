@@ -78,12 +78,8 @@ pass-.*\.txt             # Pass text exports
 pass-.*\.csv             # Pass CSV exports
 pass-.*\.json            # Pass JSON exports
 
-# ===== Claude AI Security =====
-\.claude/.*credentials.*
-\.claude/.*token.*
-\.claude/.*api.*key.*
-\.claude/settings\.local\.json
-\.claude/shell-snapshots
+# ===== Claude AI - all files managed with alternate system =====
+\.claude
 
 # ===== SSH Security =====
 id_rsa$          # SSH private keys
