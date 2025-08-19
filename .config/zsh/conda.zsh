@@ -57,6 +57,7 @@ _conda_main() {
         conda_search_paths=(
             "$HOME/miniconda3"
             "$HOME/anaconda3"
+            "/opt/conda"
             "/opt/miniconda3"
             "/opt/anaconda3"
             "/usr/local/miniconda3"
