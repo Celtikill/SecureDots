@@ -104,21 +104,27 @@ esac
 # Export conda paths for use by conda.zsh module
 case "$PLATFORM" in
     macos*)
+        # Check homebrew installations first
+        [[ -x "/opt/homebrew/anaconda3/bin/conda" ]] && CONDA_PREFIX="/opt/homebrew/anaconda3"
+        [[ -x "/opt/homebrew/miniconda3/bin/conda" ]] && CONDA_PREFIX="/opt/homebrew/miniconda3"
+        
         export CONDA_SEARCH_PATHS=(
-            "/opt/miniconda3"
-            "/opt/homebrew/Caskroom/miniconda/base"
-            "/opt/homebrew/miniconda3"
+            "${CONDA_PREFIX:-}"
+            "$HOME/opt/anaconda3"
+            "$HOME/opt/miniconda3"
             "$HOME/miniconda3"
             "$HOME/anaconda3"
-            "/usr/local/miniconda3"
             "/usr/local/anaconda3"
+            "/usr/local/miniconda3"
             "/opt/anaconda3"
+            "/opt/miniconda3"
         )
         ;;
     linux*|wsl*)
         export CONDA_SEARCH_PATHS=(
             "$HOME/miniconda3"
             "$HOME/anaconda3"
+            "/opt/conda"
             "/opt/miniconda3"
             "/opt/anaconda3"
             "/usr/local/miniconda3"

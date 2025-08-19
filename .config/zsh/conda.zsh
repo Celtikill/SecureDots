@@ -11,21 +11,12 @@ fi
 # Set CONDA_LAZY_LOAD=false to enable immediate initialization
 [[ "${CONDA_LAZY_LOAD:-true}" == "true" ]] && return 0
 
-# Platform-specific conda paths
+# Platform-specific conda paths are now handled in platform.zsh
 _conda_get_search_paths() {
-    case "$(uname)" in
-        Darwin)  # MacOS
-            echo "$HOME/opt/miniconda3"
-            echo "$HOME/opt/anaconda3"
-            echo "$HOME/miniconda3"
-            echo "$HOME/anaconda3"
-            ;;
-        Linux)
-            echo "/home/$USER/miniconda3"
-            echo "/home/$USER/anaconda3"
-            echo "/opt/conda"
-            ;;
-    esac
+    # Return the platform-specific paths set in platform.zsh
+    for path in ${CONDA_SEARCH_PATHS[@]}; do
+        echo "$path"
+    done
 }
 
 # Initialize conda detection
