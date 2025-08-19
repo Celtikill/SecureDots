@@ -2,8 +2,13 @@
 # Conda initialization - Multi-platform conda setup
 # This module handles conda initialization with comprehensive fallback mechanisms
 
-# Skip if conda is already initialized or if lazy loading is disabled
-[[ -n "${CONDA_EXE:-}" ]] && return 0
+# Skip if conda is already initialized (check for the actual conda function, not just CONDA_EXE)
+if [[ -n "${CONDA_EXE:-}" ]] && command -v conda &>/dev/null; then
+    return 0
+fi
+
+# Skip if lazy loading is enabled (default: true)
+# Set CONDA_LAZY_LOAD=false to enable immediate initialization
 [[ "${CONDA_LAZY_LOAD:-true}" == "true" ]] && return 0
 
 # Initialize conda detection
@@ -257,3 +262,4 @@ if [[ "${CONDA_LAZY_LOAD:-true}" == "true" ]]; then
         echo "📦 Conda lazy loading enabled (use 'conda' command to initialize)"
     fi
 fi
+

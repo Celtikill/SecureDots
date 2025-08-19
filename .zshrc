@@ -54,6 +54,15 @@ setopt COMPLETE_IN_WORD ALWAYS_TO_END
 # Misc
 setopt NO_BEEP INTERACTIVE_COMMENTS
 
+# ===== Local Overrides (Early Loading) =====
+# Load local settings early so they can influence module loading
+# CUSTOMIZE: Create ~/.zshrc.local for your personal settings
+# Example ~/.zshrc.local contents:
+#   export ENABLE_CONDA=1
+#   export ZSH_VERBOSE=true
+#   alias myproject='cd ~/dev/myproject'
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
 # ===== Load Modules =====
 # Modular configuration: each feature in its own file for easy customization
 ZSH_CONFIG_DIR="${HOME}/.config/zsh"
@@ -72,19 +81,24 @@ done
 
 # Conda: Python environment management (slow startup)
 # Enable with: export ENABLE_CONDA=1 in ~/.zshrc.local
+# Defensive check: ensure ZSH_CONFIG_DIR is set (can be unset in some login shell scenarios)
+[[ -z "${ZSH_CONFIG_DIR:-}" ]] && ZSH_CONFIG_DIR="${HOME}/.config/zsh"
 [[ -n "$ENABLE_CONDA" ]] && [[ -f "${ZSH_CONFIG_DIR}/conda.zsh" ]] && source "${ZSH_CONFIG_DIR}/conda.zsh"
 
 # GPG: Hardware security key integration (requires hardware)
 # Enable with: export ENABLE_GPG=1 in ~/.zshrc.local  
+[[ -z "${ZSH_CONFIG_DIR:-}" ]] && ZSH_CONFIG_DIR="${HOME}/.config/zsh"
 [[ -n "$ENABLE_GPG" ]] && [[ -f "${ZSH_CONFIG_DIR}/gpg.zsh" ]] && source "${ZSH_CONFIG_DIR}/gpg.zsh"
 
 # GPG SSH Authentication: Use GPG key for SSH (advanced setup)
 # Enable with: export ENABLE_GPG_AUTH=1 in ~/.zshrc.local
+[[ -z "${ZSH_CONFIG_DIR:-}" ]] && ZSH_CONFIG_DIR="${HOME}/.config/zsh"
 [[ -n "$ENABLE_GPG_AUTH" ]] && [[ -f "${ZSH_CONFIG_DIR}/gpg-auth.zsh" ]] && source "${ZSH_CONFIG_DIR}/gpg-auth.zsh"
 
 # AWS integration: Profile switching and credential management
 # Loaded by default because it's lightweight and commonly used
 # Disable with: export DISABLE_AWS_INTEGRATION=true in ~/.zshrc.local
+[[ -z "${ZSH_CONFIG_DIR:-}" ]] && ZSH_CONFIG_DIR="${HOME}/.config/zsh"
 if [[ "${DISABLE_AWS_INTEGRATION:-false}" != "true" ]] && [[ -f "${ZSH_CONFIG_DIR}/aws.zsh" ]]; then
     source "${ZSH_CONFIG_DIR}/aws.zsh"
 fi
@@ -100,13 +114,10 @@ elif command -v aws_completer &>/dev/null; then
     complete -C aws_completer aws
 fi
 
-# ===== Local Overrides =====
-# CUSTOMIZE: Create ~/.zshrc.local for your personal settings
-# Example ~/.zshrc.local contents:
-#   export ENABLE_CONDA=1
-#   export ZSH_VERBOSE=true
-#   alias myproject='cd ~/dev/myproject'
-[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+# ===== Local Overrides (Additional Loading) =====
+# Second pass for any additional local settings that might depend on loaded modules
+# This allows for both early configuration (affecting module loading) and late configuration
+[[ -f "$HOME/.zshrc.local.post" ]] && source "$HOME/.zshrc.local.post"
 
 # ===== Startup Messages (configurable) =====
 # Show environment info on startup - useful for debugging
