@@ -103,6 +103,16 @@ if [[ "${DISABLE_AWS_INTEGRATION:-false}" != "true" ]] && [[ -f "${ZSH_CONFIG_DI
     source "${ZSH_CONFIG_DIR}/aws.zsh"
 fi
 
+# ===== GPG Configuration =====
+# Fix GPG TTY for commit signing (prevents git commit freezing)
+# Set GPG_TTY to current terminal or fallback
+if [[ -t 0 ]]; then
+    export GPG_TTY=$(tty)
+else
+    # Fallback for non-interactive shells
+    export GPG_TTY=/dev/pts/0 2>/dev/null || export GPG_TTY=/dev/console 2>/dev/null || true
+fi
+
 # ===== Completions =====
 autoload -U +X bashcompinit && bashcompinit
 
