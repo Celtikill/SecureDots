@@ -11,3 +11,4 @@
 /backup/
 /backups/
 dotfiles-*.tar.gz.gpg
+.vim/plugged/*
