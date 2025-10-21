@@ -175,28 +175,61 @@ else
     echo "Try running: source ~/.zshrc"
 fi
 
-echo ""
-echo "🎉 SecureDots Setup Complete!"
-echo "==========================="
-echo ""
-print_success "Professional local environment configuration is ready"
-echo ""
-echo "📋 Quick Validation:"
-echo "   ✓ All required tools installed"
-echo "   ✓ Configuration files symlinked"  
-echo "   ✓ Git configured for global gitignore"
-echo "   ✓ Shell configuration ready"
-echo ""
-echo "🚀 Next Steps:"
-echo "   1. Restart your terminal or run: source ~/.zshrc"
-echo "   2. Try: dotfiles_help (see all available functions)"
-echo "   3. For AWS integration: see docs/guides/pass-setup.md"
-echo "   4. For hardware security: run ./setup/setup-secure-zsh.sh"
-echo ""
-echo "📚 Documentation:"
-echo "   • Quick commands: QUICK-REFERENCE.md"
-echo "   • Full guide: docs/USER-GUIDE.md"
-echo "   • Troubleshooting: docs/guides/TROUBLESHOOTING.md"
-echo ""
-echo "💾 Backup: Previous dotfiles saved to $BACKUP_DIR"
-echo ""
+cat <<'EOF'
+
+╔══════════════════════════════════════════════════════════════╗
+║                  ✅ Setup Complete!                          ║
+╚══════════════════════════════════════════════════════════════╝
+
+What was installed:
+  ✓ Shell configuration      (~/.zshrc)
+  ✓ Modular zsh modules       (~/.config/zsh/)
+  ✓ Git global config         (~/.gitignore_global)
+  ✓ Pure theme               (Oh My Zsh custom theme)
+  ✓ Utility functions         (aws_*, dotfiles_* commands)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Next Steps:
+
+1. Activate your new shell:
+   $ source ~/.zshrc
+
+2. Verify everything works (5-minute test):
+   $ dotfiles_help
+
+   Should show: List of available functions
+   ✅ If you see the list, everything works!
+   ❌ If "command not found", see TROUBLESHOOTING.md
+
+3. Set up AWS credentials (if needed):
+   a. See AWS config template:
+      $ cat examples/aws-config.example
+
+   b. Follow complete setup guide:
+      $ cat docs/guides/pass-setup.md
+
+   c. Or get quick reference:
+      $ cat CHEAT-SHEET.md
+
+4. Test your setup works:
+   $ echo "test" | gpg --clearsign   # Test GPG (if installed)
+   $ dotfiles_examples               # See workflow examples
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 Quick Reference:
+   • All documentation:  DOCS-INDEX.md
+   • Command reference:  CHEAT-SHEET.md
+   • AWS config example: examples/aws-config.example
+   • Troubleshooting:    docs/guides/TROUBLESHOOTING.md
+   • Full guide:         docs/USER-GUIDE.md
+
+🔐 For Hardware Security (YubiKey, etc.):
+   Run: ./setup/setup-secure-zsh.sh
+
+💾 Backup Location: $BACKUP_DIR
+
+🆘 Need help? Run: dotfiles_help
+
+EOF
