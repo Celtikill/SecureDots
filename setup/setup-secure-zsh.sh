@@ -509,9 +509,6 @@ enable-ssh-support
 
 # For hardware tokens: don't cache card PIN
 no-allow-external-cache
-
-# Card timeout - remove card status after this many seconds
-card-timeout 0
 EOF
     chmod 600 "$gpg_agent_conf"
     print_success "GPG agent configuration created with $PINENTRY_PROGRAM"
