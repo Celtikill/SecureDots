@@ -1,11 +1,33 @@
-# GPG Key Management Playbook
+# GPG Enterprise Key Management Playbook
+
+> **⚠️ ENTERPRISE SETUP - NOT REQUIRED FOR MOST USERS**
+>
+> **Looking for basic GPG setup?** See [GPG Quick Start Guide](gpg-quickstart.md) instead (15-45 minutes).
+>
+> **Use this playbook only if you need:**
+> - Air-gapped master key generation
+> - FIPS-140 Level 2+ compliant storage
+> - Complex key lifecycle management
+> - Multi-layer security for critical infrastructure
+>
+> **Estimated time:** 2-3 hours for initial setup
+> **Skill level:** Advanced (security engineers, compliance requirements)
+
+---
 
 ## Overview
-This playbook covers complete GPG key lifecycle management for a security-focused setup using:
-- Air-gapped root key generation and storage
-- Hardware security keys (YubiKey/similar) for daily operations
-- FIPS-140 compliant USB storage for .gnupg directory
-- Standards-compliant key management practices
+
+This playbook covers **enterprise-grade** GPG key lifecycle management for organizations with strict security requirements:
+
+- ✅ Air-gapped root key generation and storage
+- ✅ Hardware security keys (YubiKey/similar) for daily operations
+- ✅ FIPS-140 compliant USB storage for .gnupg directory
+- ✅ Standards-compliant key management practices
+- ✅ Complete audit trail and lifecycle procedures
+
+**Target audience:** Security teams, compliance-driven organizations, critical infrastructure
+
+**For standard use:** Most users should use [GPG Quick Start Guide](gpg-quickstart.md) instead.
 
 ## Key Architecture
 

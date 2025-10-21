@@ -73,46 +73,46 @@ sudo zypper install password-store gpg2 pinentry
 
 ## GPG Key Setup
 
-### Option 1: Create a New GPG Key
+**Before setting up pass, you need a GPG key.**
 
+### Do You Have GPG Set Up Already?
+
+**Check if you have a GPG key:**
 ```bash
-# Generate a new GPG key with recommended settings
-gpg --full-generate-key
-
-# Follow the prompts:
-# 1. Choose: (1) RSA and RSA
-# 2. Key size: 4096
-# 3. Expiry: 2y (2 years recommended)
-# 4. Enter your name and email
-# 5. Set a strong passphrase
-
-# List your keys to find the key ID
 gpg --list-secret-keys --keyid-format LONG
-
-# Example output:
-# sec   rsa4096/ABCD1234EFGH5678 2024-01-15 [SC] [expires: 2026-01-15]
-#       1234567890ABCDEF1234567890ABCDEF12345678
-# uid                 [ultimate] Your Name <your.email@example.com>
-# ssb   rsa4096/1234ABCD5678EFGH 2024-01-15 [E] [expires: 2026-01-15]
 ```
 
-### Option 2: Use Existing GPG Key
+- **If you see a key listed:** Note the key ID (part after `rsa4096/`) and skip to [Initialize Pass](#initialize-pass)
+- **If you see "No secret key":** You need to create a GPG key first
+
+### First Time Setting Up GPG?
+
+**→ See [GPG Quick Start Guide](gpg-quickstart.md)** for complete GPG setup (15-45 minutes)
+
+That guide covers:
+- Software-based GPG setup (15 minutes)
+- Hardware key setup with YubiKey (45 minutes)
+- Testing and verification
+- Backup procedures
+
+**After completing GPG setup, return here to initialize pass.**
+
+### Quick Reference: Export Your Key ID
+
+Once you have a GPG key (from the Quick Start Guide or existing):
 
 ```bash
-# List existing keys
+# Find your key ID
 gpg --list-secret-keys --keyid-format LONG
 
-# Note the key ID (the part after rsa4096/)
-# Example: ABCD1234EFGH5678
-```
+# Output looks like:
+# sec   rsa4096/ABCD1234EFGH5678 2024-01-15 [SC]
+# Your key ID is: ABCD1234EFGH5678 (after rsa4096/)
 
-### Export GPG Key ID
-
-```bash
 # Export for easy reference
-export GPG_KEY_ID="ABCD1234EFGH5678"  # Replace with your actual key ID
+export GPG_KEY_ID="ABCD1234EFGH5678"  # Replace with YOUR key ID
 
-# Verify it's set
+# Verify
 echo $GPG_KEY_ID
 ```
 

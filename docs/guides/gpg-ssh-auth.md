@@ -1,13 +1,30 @@
 # GPG SSH Authentication Setup and Management
 
 ## Overview
-This guide covers setting up SSH authentication using your GPG authentication key stored on a hardware security card (YubiKey, etc.). This eliminates the need for separate SSH keys and provides hardware-backed authentication.
+
+This guide covers setting up SSH authentication using your GPG authentication key. This eliminates the need for separate SSH keys and provides GPG-backed authentication.
 
 ## Prerequisites
-- GPG authentication subkey on hardware card (from main playbook)
-- FIPS-140 USB drive with .gnupg directory
-- GPG agent configured for SSH support
-- Hardware security card (YubiKey, etc.)
+
+**Before starting this guide, you must have:**
+
+1. **GPG already set up** with an authentication subkey
+   - ✅ If you haven't: See [GPG Quick Start Guide](gpg-quickstart.md) first
+   - ✅ If you need enterprise setup: See [GPG Enterprise Playbook](gpg-enterprise-playbook.md) first
+
+2. **Verify you have an authentication key:**
+   ```bash
+   gpg --list-keys --with-keygrip | grep -A1 "\[A\]"
+   # Should show your authentication subkey
+   ```
+
+3. **GPG agent must be working:**
+   ```bash
+   echo "test" | gpg --clearsign
+   # Should prompt for passphrase/PIN
+   ```
+
+**If any of the above fail, complete GPG setup first before continuing.**
 
 ## Architecture
 

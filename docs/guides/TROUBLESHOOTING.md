@@ -15,6 +15,14 @@ This guide covers common issues you might encounter with the security-focused do
 
 ## GPG Issues
 
+**This is the authoritative GPG troubleshooting reference.**
+
+For GPG setup, see:
+- [GPG Quick Start Guide](gpg-quickstart.md) - Basic setup
+- [GPG Enterprise Playbook](gpg-enterprise-playbook.md) - Advanced setup
+
+---
+
 ### GPG Agent Not Starting
 
 **Symptoms:**
