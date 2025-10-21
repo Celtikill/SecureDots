@@ -1,0 +1,5 @@
+gpg: error running '/opt/homebrew/Cellar/gnupg/2.4.8/bin/gpg-agent': exit status 2
+gpg: failed to start gpg-agent '/opt/homebrew/Cellar/gnupg/2.4.8/bin/gpg-agent': General error
+gpg: can't connect to the gpg-agent: General error
+
+
