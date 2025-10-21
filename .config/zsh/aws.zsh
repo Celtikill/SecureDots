@@ -38,14 +38,43 @@ aws_check() {
 # accidental access to production or unauthorized environments
 aws_switch() {
     local target_profile="$1"
-    # CUSTOMIZE: Add your approved environment profiles here
-    # Keep this list minimal - only environments you regularly access
-    local available_profiles=("dev" "staging")
+    local available_profiles=()
+    
+    # Load profiles from external config if it exists
+    local profiles_config="${HOME}/.config/securedots/aws-profiles.conf"
+    if [[ -f "$profiles_config" ]]; then
+        # Read profiles from config file, ignoring comments and empty lines
+        while IFS= read -r line; do
+            # Skip comments and empty lines
+            [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+            # Trim whitespace
+            line="${line// /}"
+            [[ -n "$line" ]] && available_profiles+=("$line")
+        done < "$profiles_config"
+    else
+        # Fallback to default profiles if config doesn't exist
+        # CUSTOMIZE: These are the default profiles if no config file exists
+        available_profiles=("dev" "staging")
+        # Optionally create the config file with defaults
+        if [[ ! -d "${HOME}/.config/securedots" ]]; then
+            mkdir -p "${HOME}/.config/securedots"
+        fi
+        cat > "$profiles_config" << 'EOF'
+# AWS Profile Allowlist Configuration
+# Edit this file to manage allowed AWS profiles
+# One profile per line, comments start with #
+
+dev
+staging
+# production  # Uncomment to enable production access
+EOF
+    fi
     
     # Show usage if no profile specified
     if [[ -z "$target_profile" ]]; then
         echo "Usage: aws_switch <profile>"
         echo "Available profiles: ${available_profiles[@]}"
+        [[ -f "$profiles_config" ]] && echo "Config: $profiles_config"
         return 1
     fi
     
