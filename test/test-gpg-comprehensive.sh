@@ -64,26 +64,76 @@ EOF
 }
 
 test_pinentry_program_detection() {
-    # Test the pinentry detection logic from setup script
+    # Test the improved pinentry detection logic from setup script
     local pinentry_program=""
+    local brew_prefix=""
 
     case "$(uname -s)" in
         Darwin*)
-            if [[ -f "/opt/homebrew/bin/pinentry-mac" ]]; then
-                pinentry_program="/opt/homebrew/bin/pinentry-mac"
-            elif [[ -f "/usr/local/bin/pinentry-mac" ]]; then
-                pinentry_program="/usr/local/bin/pinentry-mac"
-            elif command -v pinentry-mac &>/dev/null; then
+            # Get Homebrew prefix dynamically
+            if command -v brew &>/dev/null; then
+                brew_prefix="$(brew --prefix 2>/dev/null)"
+            fi
+
+            # Check candidates in priority order
+            local candidates=(
+                "${brew_prefix}/bin/pinentry-mac"
+                "/opt/homebrew/bin/pinentry-mac"
+                "/usr/local/bin/pinentry-mac"
+            )
+
+            # Try pinentry-mac first
+            for candidate in "${candidates[@]}"; do
+                if [[ -n "$candidate" && -x "$candidate" ]]; then
+                    pinentry_program="$candidate"
+                    break
+                fi
+            done
+
+            # Fallback to PATH
+            if [[ -z "$pinentry_program" ]] && command -v pinentry-mac &>/dev/null; then
                 pinentry_program="$(command -v pinentry-mac)"
-            elif [[ -f "/usr/bin/pinentry-curses" ]]; then
-                pinentry_program="/usr/bin/pinentry-curses"
+            fi
+
+            # Fallback to curses
+            if [[ -z "$pinentry_program" ]]; then
+                local curses_candidates=(
+                    "${brew_prefix}/bin/pinentry-curses"
+                    "/opt/homebrew/bin/pinentry-curses"
+                    "/usr/local/bin/pinentry-curses"
+                    "/usr/bin/pinentry-curses"
+                )
+                for candidate in "${curses_candidates[@]}"; do
+                    if [[ -n "$candidate" && -x "$candidate" ]]; then
+                        pinentry_program="$candidate"
+                        break
+                    fi
+                done
+            fi
+
+            # Last resort
+            if [[ -z "$pinentry_program" ]] && command -v pinentry &>/dev/null; then
+                pinentry_program="$(command -v pinentry)"
             fi
             ;;
         Linux*)
-            if [[ -f "/usr/bin/pinentry-curses" ]]; then
-                pinentry_program="/usr/bin/pinentry-curses"
-            elif [[ -f "/usr/bin/pinentry" ]]; then
-                pinentry_program="/usr/bin/pinentry"
+            local linux_candidates=(
+                "/usr/bin/pinentry-curses"
+                "/usr/bin/pinentry-tty"
+                "/usr/bin/pinentry"
+            )
+            for candidate in "${linux_candidates[@]}"; do
+                if [[ -x "$candidate" ]]; then
+                    pinentry_program="$candidate"
+                    break
+                fi
+            done
+
+            # Try PATH if not found
+            if [[ -z "$pinentry_program" ]] && command -v pinentry-curses &>/dev/null; then
+                pinentry_program="$(command -v pinentry-curses)"
+            elif [[ -z "$pinentry_program" ]] && command -v pinentry &>/dev/null; then
+                pinentry_program="$(command -v pinentry)"
             fi
             ;;
     esac
@@ -95,11 +145,8 @@ test_pinentry_program_detection() {
     fi
 
     assert_true "[[ -n '$pinentry_program' ]]" "Should detect a pinentry program"
-
-    # Test that the detected program exists (if not a fallback)
-    if [[ "$pinentry_program" != "/usr/bin/pinentry-curses" || -f "$pinentry_program" ]]; then
-        assert_file_exists "$pinentry_program" "Detected pinentry program should exist"
-    fi
+    assert_true "[[ -x '$pinentry_program' ]]" "Detected pinentry should be executable"
+    assert_file_exists "$pinentry_program" "Detected pinentry program should exist"
 }
 
 test_gpg_config_update_logic() {

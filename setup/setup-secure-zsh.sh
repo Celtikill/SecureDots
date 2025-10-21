@@ -281,62 +281,167 @@ print_info "Configuring GPG agent..."
 gpg_conf_dir="$HOME/.gnupg"
 gpg_agent_conf="$gpg_conf_dir/gpg-agent.conf"
 
-# Platform-specific pinentry detection
+# Platform-specific pinentry detection with validation
 detect_pinentry() {
     local pinentry_program=""
-    
+    local brew_prefix=""
+
     # Detect OS and set appropriate pinentry
     case "$(uname -s)" in
         Darwin*)
             # macOS - prefer GUI pinentry
-            if [[ -f "/opt/homebrew/bin/pinentry-mac" ]]; then
-                # Apple Silicon Mac
-                pinentry_program="/opt/homebrew/bin/pinentry-mac"
-                print_info "Detected Apple Silicon Mac, using pinentry-mac"
-            elif [[ -f "/usr/local/bin/pinentry-mac" ]]; then
-                # Intel Mac
-                pinentry_program="/usr/local/bin/pinentry-mac"
-                print_info "Detected Intel Mac, using pinentry-mac"
-            elif command -v pinentry-mac &>/dev/null; then
-                # Fallback to PATH-based detection
+            print_info "Detecting pinentry for macOS..."
+
+            # Try to get Homebrew prefix dynamically (handles both architectures)
+            if command -v brew &>/dev/null; then
+                brew_prefix="$(brew --prefix 2>/dev/null)"
+            fi
+
+            # Priority order for macOS:
+            # 1. Homebrew pinentry-mac (dynamic prefix)
+            # 2. Apple Silicon path
+            # 3. Intel Mac path
+            # 4. PATH-based detection
+            # 5. Homebrew pinentry-curses
+            # 6. System pinentry-curses
+            # 7. Any pinentry in PATH
+
+            local candidates=(
+                "${brew_prefix}/bin/pinentry-mac"
+                "/opt/homebrew/bin/pinentry-mac"
+                "/usr/local/bin/pinentry-mac"
+            )
+
+            # Check for pinentry-mac first (preferred for macOS)
+            for candidate in "${candidates[@]}"; do
+                if [[ -n "$candidate" && -x "$candidate" ]]; then
+                    pinentry_program="$candidate"
+                    print_info "Using pinentry-mac: $pinentry_program"
+                    break
+                fi
+            done
+
+            # If not found in standard locations, try PATH
+            if [[ -z "$pinentry_program" ]] && command -v pinentry-mac &>/dev/null; then
                 pinentry_program="$(command -v pinentry-mac)"
                 print_info "Using pinentry-mac from PATH: $pinentry_program"
-            elif [[ -f "/usr/bin/pinentry-curses" ]]; then
-                # Fallback to curses if no GUI available
-                pinentry_program="/usr/bin/pinentry-curses"
-                print_warning "pinentry-mac not found, falling back to pinentry-curses"
+            fi
+
+            # Fallback to curses-based pinentry
+            if [[ -z "$pinentry_program" ]]; then
+                print_warning "pinentry-mac not found, falling back to text-based pinentry"
+
+                local curses_candidates=(
+                    "${brew_prefix}/bin/pinentry-curses"
+                    "/opt/homebrew/bin/pinentry-curses"
+                    "/usr/local/bin/pinentry-curses"
+                    "/usr/bin/pinentry-curses"
+                )
+
+                for candidate in "${curses_candidates[@]}"; do
+                    if [[ -n "$candidate" && -x "$candidate" ]]; then
+                        pinentry_program="$candidate"
+                        print_info "Using pinentry-curses: $pinentry_program"
+                        break
+                    fi
+                done
+            fi
+
+            # Last resort: try any pinentry in PATH
+            if [[ -z "$pinentry_program" ]] && command -v pinentry &>/dev/null; then
+                pinentry_program="$(command -v pinentry)"
+                print_warning "Using generic pinentry: $pinentry_program"
+            fi
+
+            # If still not found, provide helpful error
+            if [[ -z "$pinentry_program" ]]; then
+                print_error "No pinentry program found!"
                 print_info "Install with: brew install pinentry-mac"
+                return 1
             fi
             ;;
         Linux*)
             # Linux - use curses by default
-            if [[ -f "/usr/bin/pinentry-curses" ]]; then
-                pinentry_program="/usr/bin/pinentry-curses"
-            elif [[ -f "/usr/bin/pinentry" ]]; then
-                pinentry_program="/usr/bin/pinentry"
-            elif command -v pinentry-curses &>/dev/null; then
+            print_info "Detecting pinentry for Linux..."
+
+            local linux_candidates=(
+                "/usr/bin/pinentry-curses"
+                "/usr/bin/pinentry-tty"
+                "/usr/bin/pinentry"
+            )
+
+            for candidate in "${linux_candidates[@]}"; do
+                if [[ -x "$candidate" ]]; then
+                    pinentry_program="$candidate"
+                    break
+                fi
+            done
+
+            # Try PATH if not found
+            if [[ -z "$pinentry_program" ]] && command -v pinentry-curses &>/dev/null; then
                 pinentry_program="$(command -v pinentry-curses)"
+            elif [[ -z "$pinentry_program" ]] && command -v pinentry &>/dev/null; then
+                pinentry_program="$(command -v pinentry)"
+            fi
+
+            if [[ -z "$pinentry_program" ]]; then
+                print_error "No pinentry program found!"
+                print_info "Install with: sudo apt-get install pinentry-curses  # Debian/Ubuntu"
+                print_info "          or: sudo yum install pinentry            # RHEL/CentOS"
+                return 1
             fi
             ;;
         *)
             # Unknown platform - try to find any pinentry
+            print_warning "Unknown platform, attempting to detect pinentry..."
+
             if command -v pinentry &>/dev/null; then
                 pinentry_program="$(command -v pinentry)"
-            else
-                pinentry_program="/usr/bin/pinentry-curses"
+            elif [[ -x "/usr/bin/pinentry" ]]; then
+                pinentry_program="/usr/bin/pinentry"
+            fi
+
+            if [[ -z "$pinentry_program" ]]; then
+                print_error "No pinentry program found!"
+                return 1
             fi
             ;;
     esac
-    
+
+    # Validate that the detected pinentry is executable
+    if [[ ! -x "$pinentry_program" ]]; then
+        print_error "Detected pinentry is not executable: $pinentry_program"
+        return 1
+    fi
+
+    print_success "Validated pinentry: $pinentry_program"
     echo "$pinentry_program"
+    return 0
 }
 
 # Detect the appropriate pinentry program
 PINENTRY_PROGRAM=$(detect_pinentry)
 
-if [[ -f "$gpg_agent_conf" ]]; then
+# Check if detection succeeded
+if [[ -z "$PINENTRY_PROGRAM" ]]; then
+    print_error "Failed to detect pinentry program"
+    print_warning "GPG agent configuration will be skipped"
+    print_info "Please install pinentry and re-run this script"
+
+    # Ask user if they want to continue
+    read -p "Continue setup without GPG configuration? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+
+    # Skip GPG configuration
+    SKIP_GPG_CONFIG=true
+fi
+
+if [[ "$SKIP_GPG_CONFIG" != "true" ]] && [[ -f "$gpg_agent_conf" ]]; then
     print_info "GPG agent config exists, checking for required settings..."
-    
+
     # Check if it's configured for hardware keys
     if grep -q "^default-cache-ttl 0" "$gpg_agent_conf"; then
         print_success "GPG agent configured for hardware keys (no caching)"
@@ -344,11 +449,22 @@ if [[ -f "$gpg_agent_conf" ]]; then
         print_warning "GPG agent may be caching credentials"
         echo "  For hardware keys, consider setting: default-cache-ttl 0"
     fi
-    
+
     # Update pinentry program if needed
     if grep -q "^pinentry-program" "$gpg_agent_conf"; then
         current_pinentry=$(grep "^pinentry-program" "$gpg_agent_conf" | awk '{print $2}')
-        if [[ "$current_pinentry" != "$PINENTRY_PROGRAM" ]]; then
+
+        # Validate current pinentry path
+        if [[ ! -x "$current_pinentry" ]]; then
+            print_warning "Current pinentry is invalid or not executable: $current_pinentry"
+            print_info "Updating to valid pinentry: $PINENTRY_PROGRAM"
+            # Create backup before modifying
+            cp "$gpg_agent_conf" "${gpg_agent_conf}.backup"
+            # Update pinentry program
+            sed -i.tmp "s|^pinentry-program .*|pinentry-program $PINENTRY_PROGRAM|" "$gpg_agent_conf"
+            rm -f "${gpg_agent_conf}.tmp"
+            print_success "Updated pinentry program"
+        elif [[ "$current_pinentry" != "$PINENTRY_PROGRAM" ]]; then
             print_info "Updating pinentry program from $current_pinentry to $PINENTRY_PROGRAM"
             # Create backup before modifying
             cp "$gpg_agent_conf" "${gpg_agent_conf}.backup"
@@ -364,7 +480,7 @@ if [[ -f "$gpg_agent_conf" ]]; then
         echo "pinentry-program $PINENTRY_PROGRAM" >> "$gpg_agent_conf"
         print_success "Added pinentry program"
     fi
-else
+elif [[ "$SKIP_GPG_CONFIG" != "true" ]]; then
     print_info "Creating GPG agent configuration..."
     cat > "$gpg_agent_conf" << EOF
 # GPG Agent configuration
@@ -401,10 +517,12 @@ EOF
     print_success "GPG agent configuration created with $PINENTRY_PROGRAM"
 fi
 
-# Restart GPG agent to apply changes
-print_info "Restarting GPG agent to apply configuration..."
-gpgconf --kill gpg-agent 2>/dev/null || true
-print_success "GPG agent will restart automatically when needed"
+# Restart GPG agent to apply changes (only if we configured it)
+if [[ "$SKIP_GPG_CONFIG" != "true" ]]; then
+    print_info "Restarting GPG agent to apply configuration..."
+    gpgconf --kill gpg-agent 2>/dev/null || true
+    print_success "GPG agent will restart automatically when needed"
+fi
 
 # Step 11: Create global gitignore
 print_info "Setting up global gitignore..."
