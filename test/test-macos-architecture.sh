@@ -62,23 +62,58 @@ test_homebrew_path_detection() {
 
 test_pinentry_detection() {
     # Test pinentry program detection based on architecture
-    local expected_pinentry
-    
-    if [[ -f "/opt/homebrew/bin/pinentry-mac" ]]; then
-        expected_pinentry="/opt/homebrew/bin/pinentry-mac"
-        assert_pinentry_path "$expected_pinentry" "Apple Silicon pinentry-mac should exist"
-    elif [[ -f "/usr/local/bin/pinentry-mac" ]]; then
-        expected_pinentry="/usr/local/bin/pinentry-mac"
-        assert_pinentry_path "$expected_pinentry" "Intel pinentry-mac should exist"
-    elif [[ -f "/usr/local/bin/pinentry-curses" ]]; then
-        expected_pinentry="/usr/local/bin/pinentry-curses"
-        assert_pinentry_path "$expected_pinentry" "Fallback pinentry-curses should exist"
-    else
+    local expected_pinentry=""
+    local brew_prefix=""
+
+    # Get Homebrew prefix dynamically
+    if command -v brew &>/dev/null; then
+        brew_prefix="$(brew --prefix 2>/dev/null)"
+    fi
+
+    # Check in priority order matching the improved detection logic
+    local candidates=(
+        "${brew_prefix}/bin/pinentry-mac"
+        "/opt/homebrew/bin/pinentry-mac"
+        "/usr/local/bin/pinentry-mac"
+    )
+
+    # Try pinentry-mac first
+    for candidate in "${candidates[@]}"; do
+        if [[ -n "$candidate" && -x "$candidate" ]]; then
+            expected_pinentry="$candidate"
+            break
+        fi
+    done
+
+    # Fallback to curses if no pinentry-mac
+    if [[ -z "$expected_pinentry" ]]; then
+        local curses_candidates=(
+            "${brew_prefix}/bin/pinentry-curses"
+            "/opt/homebrew/bin/pinentry-curses"
+            "/usr/local/bin/pinentry-curses"
+            "/usr/bin/pinentry-curses"
+        )
+        for candidate in "${curses_candidates[@]}"; do
+            if [[ -n "$candidate" && -x "$candidate" ]]; then
+                expected_pinentry="$candidate"
+                break
+            fi
+        done
+    fi
+
+    # If still nothing, check PATH
+    if [[ -z "$expected_pinentry" ]] && command -v pinentry &>/dev/null; then
+        expected_pinentry="$(command -v pinentry)"
+    fi
+
+    # If no pinentry found at all, skip the test
+    if [[ -z "$expected_pinentry" ]]; then
         skip_test "No pinentry program found" "Install pinentry with: brew install pinentry-mac"
         return 0
     fi
-    
-    # Test that pinentry is executable
+
+    # Verify the detected pinentry
+    assert_pinentry_path "$expected_pinentry" "Detected pinentry should exist"
     assert_true "[[ -x '$expected_pinentry' ]]" "Pinentry should be executable"
 }
 
@@ -86,58 +121,114 @@ test_platform_detection_function() {
     # Extract and test the detect_pinentry function from setup script
     local setup_script="$DOTFILES_DIR/setup/setup-secure-zsh.sh"
     assert_file_exists "$setup_script" "Setup script should exist"
-    
+
     # Extract the function and test it
     local temp_script=$(mktemp)
-    
-    # Create a test version of the function
+
+    # Create a test version matching the improved detection logic
     cat > "$temp_script" << 'EOF'
 detect_pinentry_test() {
     local pinentry_program=""
-    
+    local brew_prefix=""
+
+    # Get Homebrew prefix if available
+    if command -v brew &>/dev/null; then
+        brew_prefix="$(brew --prefix 2>/dev/null)"
+    fi
+
     case "$(uname -s)" in
         Darwin*)
-            if [[ -f "/opt/homebrew/bin/pinentry-mac" ]]; then
-                pinentry_program="/opt/homebrew/bin/pinentry-mac"
-            elif [[ -f "/usr/local/bin/pinentry-mac" ]]; then
-                pinentry_program="/usr/local/bin/pinentry-mac"
-            elif command -v pinentry-mac &>/dev/null; then
+            # Check candidates in priority order
+            local candidates=(
+                "${brew_prefix}/bin/pinentry-mac"
+                "/opt/homebrew/bin/pinentry-mac"
+                "/usr/local/bin/pinentry-mac"
+            )
+
+            for candidate in "${candidates[@]}"; do
+                if [[ -n "$candidate" && -x "$candidate" ]]; then
+                    pinentry_program="$candidate"
+                    break
+                fi
+            done
+
+            # Fallback to PATH
+            if [[ -z "$pinentry_program" ]] && command -v pinentry-mac &>/dev/null; then
                 pinentry_program="$(command -v pinentry-mac)"
-            elif [[ -f "/usr/bin/pinentry-curses" ]]; then
-                pinentry_program="/usr/bin/pinentry-curses"
+            fi
+
+            # Fallback to curses
+            if [[ -z "$pinentry_program" ]]; then
+                local curses_candidates=(
+                    "${brew_prefix}/bin/pinentry-curses"
+                    "/opt/homebrew/bin/pinentry-curses"
+                    "/usr/local/bin/pinentry-curses"
+                    "/usr/bin/pinentry-curses"
+                )
+                for candidate in "${curses_candidates[@]}"; do
+                    if [[ -n "$candidate" && -x "$candidate" ]]; then
+                        pinentry_program="$candidate"
+                        break
+                    fi
+                done
+            fi
+
+            # Last resort
+            if [[ -z "$pinentry_program" ]] && command -v pinentry &>/dev/null; then
+                pinentry_program="$(command -v pinentry)"
             fi
             ;;
         Linux*)
-            if [[ -f "/usr/bin/pinentry-curses" ]]; then
-                pinentry_program="/usr/bin/pinentry-curses"
-            elif [[ -f "/usr/bin/pinentry" ]]; then
-                pinentry_program="/usr/bin/pinentry"
-            elif command -v pinentry-curses &>/dev/null; then
+            local candidates=(
+                "/usr/bin/pinentry-curses"
+                "/usr/bin/pinentry-tty"
+                "/usr/bin/pinentry"
+            )
+            for candidate in "${candidates[@]}"; do
+                if [[ -x "$candidate" ]]; then
+                    pinentry_program="$candidate"
+                    break
+                fi
+            done
+
+            # Try PATH
+            if [[ -z "$pinentry_program" ]] && command -v pinentry-curses &>/dev/null; then
                 pinentry_program="$(command -v pinentry-curses)"
+            elif [[ -z "$pinentry_program" ]] && command -v pinentry &>/dev/null; then
+                pinentry_program="$(command -v pinentry)"
             fi
             ;;
         *)
             if command -v pinentry &>/dev/null; then
                 pinentry_program="$(command -v pinentry)"
-            else
-                pinentry_program="/usr/bin/pinentry-curses"
             fi
             ;;
     esac
-    
+
     echo "$pinentry_program"
 }
 EOF
-    
+
     source "$temp_script"
-    
+
     # Test the function
     local detected_pinentry=$(detect_pinentry_test)
-    assert_true "[[ -n '$detected_pinentry' ]]" "Should detect a pinentry program"
-    
-    # Verify it's a reasonable path
-    assert_true "[[ '$detected_pinentry' == *pinentry* ]]" "Should contain 'pinentry' in path"
-    
+
+    # The function should either find a pinentry or return empty
+    # If empty, that's actually OK - it means no pinentry installed
+    if [[ -n "$detected_pinentry" ]]; then
+        # If something was detected, verify it's valid
+        assert_true "[[ '$detected_pinentry' == *pinentry* ]]" "Should contain 'pinentry' in path"
+
+        # If the path exists, it should be executable
+        if [[ -f "$detected_pinentry" ]]; then
+            assert_true "[[ -x '$detected_pinentry' ]]" "Detected pinentry should be executable"
+        fi
+    else
+        # No pinentry found - this is a valid state on systems without pinentry
+        print_warning "No pinentry program found (this is expected if pinentry-mac is not installed)"
+    fi
+
     # Clean up
     rm -f "$temp_script"
 }
