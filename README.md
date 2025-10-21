@@ -1,5 +1,42 @@
 # SecureDots
 
+**Enterprise-grade local credential management with zero plaintext storage**
+
+---
+
+## → Start Here
+
+Choose your path based on what you need right now:
+
+**→ First time here?**
+[5-Minute Quickstart](#quick-setup-paths) - Install and get running
+
+**→ Need a specific command?**
+[Command Cheat Sheet](CHEAT-SHEET.md) - Single-page reference
+
+**→ Something broken?**
+[Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md) - Fix common issues
+
+**→ Want to see all docs?**
+[Documentation Index](DOCS-INDEX.md) - Complete navigation
+
+**→ Evaluating for your team?**
+[Security Model](SECURITY.md) + [Architecture](docs/ARCHITECTURE.md) - For CISOs
+
+**→ Setting up AWS profiles?**
+[AWS Config Example](examples/aws-config.example) - Copy and customize
+
+---
+
+<details>
+<summary>📖 More Details (What is this? / Why use it? / How does it work?)</summary>
+
+**Local environment configuration with Documentation You Can Show Your CISO**
+
+*Professional-grade credential management that eliminates plaintext secrets while maintaining developer productivity.*
+
+> **⚠️ Opinionated Setup:** This repository reflects my personal development preferences and workflow opinions. Tool choices (vim, zsh, conda, Claude AI configs) represent my individual preferences - not universal recommendations. Customize to match your own workflow needs.
+
 <!-- Table of Contents for screen readers -->
 <details>
 <summary>Table of Contents</summary>
@@ -16,11 +53,7 @@
 
 </details>
 
-**Local environment configuration with Documentation You Can Show Your CISO**
-
-*Professional-grade credential management that eliminates plaintext secrets while maintaining developer productivity.*
-
-> **⚠️ Opinionated Setup:** This repository reflects my personal development preferences and workflow opinions. Tool choices (vim, zsh, conda, Claude AI configs) represent my individual preferences - not universal recommendations. Customize to match your own workflow needs.
+</details>
 
 ## 🎯 How to Use This Repository
 
