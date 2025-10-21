@@ -1,0 +1,172 @@
+# AWS Configuration Example
+# Copy this file to ~/.aws/config and customize for your AWS accounts
+
+# This example shows how to configure AWS profiles using the secure credential
+# process integration with pass (the password manager). This eliminates the need
+# to store plaintext credentials in ~/.aws/credentials.
+
+# =============================================================================
+# BASIC PROFILE EXAMPLES
+# =============================================================================
+
+# Development Environment Profile
+[profile dev]
+# AWS region for this profile
+region = us-east-1
+
+# Output format (json, yaml, text, table)
+output = json
+
+# Credential process integration with pass
+# Replace 'dev' with your pass entry name (e.g., pass show aws/dev)
+credential_process = /bin/bash -c 'pass show aws/dev | jq -r "{Version: 1, AccessKeyId: .AWS_ACCESS_KEY_ID, SecretAccessKey: .AWS_SECRET_ACCESS_KEY}"'
+
+# Optional: Set account ID for validation
+# aws_account_id = 123456789012
+
+
+# Staging Environment Profile
+[profile staging]
+region = us-east-1
+output = json
+credential_process = /bin/bash -c 'pass show aws/staging | jq -r "{Version: 1, AccessKeyId: .AWS_ACCESS_KEY_ID, SecretAccessKey: .AWS_SECRET_ACCESS_KEY}"'
+
+
+# Production Environment Profile
+[profile prod]
+region = us-east-1
+output = json
+credential_process = /bin/bash -c 'pass show aws/prod | jq -r "{Version: 1, AccessKeyId: .AWS_ACCESS_KEY_ID, SecretAccessKey: .AWS_SECRET_ACCESS_KEY}"'
+
+# Optional: Additional protection for production
+# cli_pager =  # Disable pager to prevent accidental commands
+
+
+# =============================================================================
+# ADVANCED PROFILE EXAMPLES
+# =============================================================================
+
+# Profile with Different Region
+[profile us-west]
+region = us-west-2
+output = json
+credential_process = /bin/bash -c 'pass show aws/us-west | jq -r "{Version: 1, AccessKeyId: .AWS_ACCESS_KEY_ID, SecretAccessKey: .AWS_SECRET_ACCESS_KEY}"'
+
+
+# Profile with Session Token (for temporary credentials)
+[profile temp-role]
+region = us-east-1
+output = json
+# Note: For session tokens, your pass entry must include AWS_SESSION_TOKEN
+credential_process = /bin/bash -c 'pass show aws/temp-role | jq -r "{Version: 1, AccessKeyId: .AWS_ACCESS_KEY_ID, SecretAccessKey: .AWS_SECRET_ACCESS_KEY, SessionToken: .AWS_SESSION_TOKEN}"'
+
+
+# Profile with MFA/Assumed Role
+[profile admin]
+region = us-east-1
+output = json
+# Source credentials from another profile
+source_profile = dev
+# Role to assume
+role_arn = arn:aws:iam::123456789012:role/AdminRole
+# Optional: External ID for cross-account access
+# external_id = unique-external-id
+# Optional: Session name
+role_session_name = admin-session
+# Optional: MFA device ARN
+# mfa_serial = arn:aws:iam::123456789012:mfa/username
+
+
+# =============================================================================
+# CUSTOMIZATION INSTRUCTIONS
+# =============================================================================
+
+# 1. Copy this file to your AWS config location:
+#    cp examples/aws-config.example ~/.aws/config
+#
+# 2. Customize the profile names to match your accounts:
+#    - Replace 'dev', 'staging', 'prod' with your environment names
+#    - Update regions to match your preferred AWS regions
+#
+# 3. Set up credentials in pass for each profile:
+#
+#    For basic credentials:
+#    $ pass insert -m aws/dev
+#    # Then paste JSON format:
+#    {
+#      "AWS_ACCESS_KEY_ID": "AKIAIOSFODNN7EXAMPLE",
+#      "AWS_SECRET_ACCESS_KEY": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+#    }
+#
+#    For credentials with session token:
+#    $ pass insert -m aws/temp-role
+#    # Then paste JSON format:
+#    {
+#      "AWS_ACCESS_KEY_ID": "ASIAIOSFODNN7EXAMPLE",
+#      "AWS_SECRET_ACCESS_KEY": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+#      "AWS_SESSION_TOKEN": "FwoGZXIvYXdzEHQa..."
+#    }
+#
+# 4. Test your configuration:
+#    $ aws_switch dev
+#    $ aws_check
+#    $ aws sts get-caller-identity
+#
+# =============================================================================
+# PASS ENTRY STRUCTURE
+# =============================================================================
+
+# Your pass password store should be organized like this:
+#
+# ~/.password-store/
+# └── aws/
+#     ├── dev.gpg
+#     ├── staging.gpg
+#     ├── prod.gpg
+#     └── temp-role.gpg
+#
+# Each .gpg file contains encrypted JSON with your credentials.
+# See docs/guides/pass-setup.md for detailed setup instructions.
+
+# =============================================================================
+# PLATFORM-SPECIFIC NOTES
+# =============================================================================
+
+# macOS:
+#   - Use full path to jq if needed: /usr/local/bin/jq or /opt/homebrew/bin/jq
+#   - credential_process = /bin/bash -c 'pass show aws/dev | /opt/homebrew/bin/jq ...'
+
+# Linux:
+#   - Default paths should work: /bin/bash, jq (in PATH)
+
+# WSL2:
+#   - Ensure jq is installed: sudo apt-get install jq
+#   - Pass should be accessible in WSL environment
+
+# =============================================================================
+# TROUBLESHOOTING
+# =============================================================================
+
+# If you get "credential_process returned invalid JSON":
+#   1. Test the credential process directly:
+#      $ pass show aws/dev | jq -r "{Version: 1, AccessKeyId: .AWS_ACCESS_KEY_ID, SecretAccessKey: .AWS_SECRET_ACCESS_KEY}"
+#   2. Ensure your pass entry is valid JSON format
+#   3. Verify jq is installed: which jq
+#
+# If you get "pass: <profile> is not in the password store":
+#   1. Check what's in your pass store: pass ls aws/
+#   2. Create the missing entry: pass insert -m aws/<profile>
+#
+# For more help, see: docs/guides/TROUBLESHOOTING.md
+
+# =============================================================================
+# SECURITY NOTES
+# =============================================================================
+
+# - Credentials are stored encrypted in ~/.password-store/
+# - No plaintext credentials are ever written to ~/.aws/credentials
+# - The credential_process fetches credentials on-demand from pass
+# - Each credential access may prompt for your GPG passphrase
+# - Consider hardware keys (YubiKey) for additional security
+#
+# See SECURITY.md for the complete security model.
