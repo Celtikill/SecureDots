@@ -158,11 +158,16 @@ assert_not_contains() {
 run_test() {
     local test_name="$1"
     local test_function="$2"
-    
+
     TESTS_RUN=$((TESTS_RUN + 1))
-    
+
     echo -n "  $test_name ... "
-    
+
+    # Call setup before running test (if defined)
+    if declare -f setup &>/dev/null; then
+        setup
+    fi
+
     # Run test in subshell to isolate environment
     if ( $test_function ) &>/dev/null; then
         echo -e "${GREEN}PASS${NC}"
@@ -173,7 +178,12 @@ run_test() {
         FAILED_TESTS+=("$test_name")
         # Re-run with output for debugging
         echo "    Details:"
-        ( $test_function ) 2>&1 | sed 's/^/      /'
+        ( setup &>/dev/null; $test_function ) 2>&1 | sed 's/^/      /'
+    fi
+
+    # Call teardown after running test (if defined)
+    if declare -f teardown &>/dev/null; then
+        teardown
     fi
 }
 

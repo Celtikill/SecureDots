@@ -16,8 +16,8 @@ source "$SCRIPT_DIR/test-framework.sh"
 setup() {
     setup_test_environment "gpg"
     # Create mock GPG directories
-    mkdir -p "${TEST_GNUPG_DIR:-/tmp/test_gnupg}"
-    chmod 700 "${TEST_GNUPG_DIR:-/tmp/test_gnupg}"
+    mkdir -p "$TEST_GNUPG_DIR"
+    chmod 700 "$TEST_GNUPG_DIR"
 }
 
 teardown() {
@@ -66,7 +66,7 @@ EOF
 test_pinentry_program_detection() {
     # Test the pinentry detection logic from setup script
     local pinentry_program=""
-    
+
     case "$(uname -s)" in
         Darwin*)
             if [[ -f "/opt/homebrew/bin/pinentry-mac" ]]; then
@@ -87,9 +87,15 @@ test_pinentry_program_detection() {
             fi
             ;;
     esac
-    
+
+    # If no pinentry found, skip the test with installation instructions
+    if [[ -z "$pinentry_program" ]]; then
+        skip_test "No pinentry program found" "Install with: brew install pinentry-mac"
+        return 0
+    fi
+
     assert_true "[[ -n '$pinentry_program' ]]" "Should detect a pinentry program"
-    
+
     # Test that the detected program exists (if not a fallback)
     if [[ "$pinentry_program" != "/usr/bin/pinentry-curses" || -f "$pinentry_program" ]]; then
         assert_file_exists "$pinentry_program" "Detected pinentry program should exist"
@@ -204,15 +210,16 @@ test_hardware_key_detection() {
 test_gpg_key_simulation() {
     # Mock GPG keys present
     export MOCK_GPG_KEYS="present"
-    
+
     local key_output=$(mock_gpg_command "--list-secret-keys")
     assert_contains "$key_output" "sec" "Should show secret key when present"
     assert_contains "$key_output" "Test User" "Should show user ID"
-    
+
     # Mock no GPG keys
     export MOCK_GPG_KEYS="absent"
-    
-    local no_key_output=$(mock_gpg_command "--list-secret-keys")
+
+    # Capture exit code before capturing output
+    mock_gpg_command "--list-secret-keys" >/dev/null 2>&1
     local exit_code=$?
     assert_equals "2" "$exit_code" "Should return error code when no keys present"
 }

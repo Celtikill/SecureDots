@@ -212,7 +212,7 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
             assert_file_exists "/usr/local/bin/pinentry-mac" "Intel pinentry should exist"
         else
             skip_test "No pinentry-mac installed" "Install with: brew install pinentry-mac"
-            return 1
+            return 0
         fi
     }
     

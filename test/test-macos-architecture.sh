@@ -197,8 +197,10 @@ test_rosetta_environment() {
 
 test_environment_variables() {
     # Test that platform detection sets appropriate environment variables
+    set +u  # Disable nounset temporarily for platform.zsh
     source "$DOTFILES_DIR/.config/zsh/platform.zsh"
-    
+    set -u  # Re-enable nounset
+
     assert_true "[[ -n '$PLATFORM' ]]" "PLATFORM variable should be set"
     
     if [[ "$(uname -s)" == "Darwin" ]]; then
@@ -247,8 +249,10 @@ test_path_precedence() {
 
 test_architecture_specific_optimizations() {
     # Test that architecture-specific optimizations are applied
+    set +u  # Disable nounset temporarily for platform.zsh
     source "$DOTFILES_DIR/.config/zsh/platform.zsh"
-    
+    set -u  # Re-enable nounset
+
     # Check that the PATH includes the correct Homebrew directory
     if [[ -d "/opt/homebrew/bin" ]]; then
         assert_contains "$PATH" "/opt/homebrew/bin" "PATH should include Apple Silicon Homebrew"
