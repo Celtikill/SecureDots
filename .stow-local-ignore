@@ -50,6 +50,7 @@ _darcs
 \.tmp$       # temporary files
 \.swp$       # vim swap files
 \.swo$       # vim swap files
+\.netrwhist$ # vim netrw history
 \#.*         # various temp files
 
 # ===== AWS Security =====
