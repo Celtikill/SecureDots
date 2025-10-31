@@ -18,4 +18,5 @@
 /backup/
 /backups/
 dotfiles-*.tar.gz.gpg
-.vim/plugged/*
+.vim/plugged/
+.vim/.netrwhist
