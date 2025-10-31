@@ -276,6 +276,20 @@ EOF
 chmod 600 "$HOME/.aws/config"
 print_success "AWS config created (default profile will be: $default_profile)"
 
+# Validate that credential_process uses absolute paths (critical for cross-platform compatibility)
+print_info "Validating credential_process paths..."
+if grep -qE '^\s*credential_process\s*=' "$HOME/.aws/config"; then
+    # Check for any relative paths (lines that don't start with / after =)
+    if grep -E '^\s*credential_process\s*=' "$HOME/.aws/config" | grep -qvE '^\s*credential_process\s*=\s*/'; then
+        print_warning "Warning: Relative paths detected in credential_process configuration"
+        echo "  AWS requires absolute paths. The setup script should have created absolute paths."
+        echo "  If you see this warning, please report it as a bug."
+        echo "  Your config file: $HOME/.aws/config"
+    else
+        print_success "Credential process paths validated (using absolute paths)"
+    fi
+fi
+
 # Step 10: Create/update GPG agent configuration
 print_info "Configuring GPG agent..."
 gpg_conf_dir="$HOME/.gnupg"

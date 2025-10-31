@@ -263,10 +263,22 @@ output = json
 credential_process = /home/user/.aws/credential-process.sh dev
 
 [profile staging]
-region = us-east-2  
+region = us-east-2
 output = json
 credential_process = /home/user/.aws/credential-process.sh staging
 ```
+
+**Critical Implementation Detail: Absolute Paths**
+
+AWS requires absolute paths for `credential_process` configuration. This is a strict requirement enforced by the AWS SDK:
+- ❌ Relative paths (`./`, `../`) are not supported
+- ❌ Tilde expansion (`~`) does not work
+- ❌ Environment variables (`$HOME`, `$USER`) are not expanded
+- ✅ Only absolute paths (e.g., `/home/user/.aws/...`, `/Users/user/.aws/...`) are valid
+
+**Reason**: The AWS CLI executes the credential process from its own working directory context. When AWS CLI invokes the script, the current working directory may not be `~/.aws/`, causing relative paths to fail with "No such file or directory" errors. This is particularly common on macOS systems.
+
+**Validation**: The `validate.sh` script checks for this issue and provides automatic fix commands. See [Troubleshooting Guide](guides/TROUBLESHOOTING.md#credential-process-script-not-found) for diagnosis and resolution steps.
 
 #### Credential Process Script Features
 - **Retry Logic**: Handles transient hardware key issues

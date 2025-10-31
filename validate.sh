@@ -48,6 +48,25 @@ validate_aws_config() {
         print_error "AWS config file missing (.aws/config)"
     fi
     
+    # Check for relative paths in credential_process (common macOS issue)
+    if [[ -f .aws/config ]]; then
+        local relative_paths=$(grep -E '^\s*credential_process\s*=' .aws/config | grep -vE '^\s*credential_process\s*=\s*/' || true)
+        if [[ -n "$relative_paths" ]]; then
+            print_error "Relative path detected in credential_process configuration"
+            echo "  AWS requires absolute paths for credential_process"
+            echo "  Found: $(echo "$relative_paths" | head -1 | sed 's/^[[:space:]]*//')"
+            echo
+            echo "  Fix command:"
+            echo "  sed -i.bak \"s|credential_process = \./credential-process.sh|credential_process = \$HOME/.aws/credential-process.sh|g\" ~/.aws/config"
+            echo "  sed -i.bak \"s|credential_process = ~/|credential_process = \$HOME/|g\" ~/.aws/config"
+        else
+            # Only check absolute paths if no relative paths found
+            if grep -qE '^\s*credential_process\s*=\s*/' .aws/config; then
+                print_success "Credential process uses absolute paths"
+            fi
+        fi
+    fi
+
     # Check credential process script
     if [[ -f .aws/credential-process.sh ]]; then
         if [[ -x .aws/credential-process.sh ]]; then
@@ -58,7 +77,7 @@ validate_aws_config() {
     else
         print_error "Credential process script missing (.aws/credential-process.sh)"
     fi
-    
+
     echo
 }
 

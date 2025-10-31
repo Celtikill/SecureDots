@@ -381,6 +381,42 @@ test_setup_validation() {
     assert_file_permissions "${TEST_GNUPG_DIR}/gpg-agent.conf" "600" "GPG config should have secure permissions"
 }
 
+test_credential_process_absolute_paths() {
+    # Test that validation detects relative paths in credential_process
+
+    # Create AWS config with relative path (incorrect)
+    local aws_config="${TEST_AWS_DIR}/config"
+    cat > "$aws_config" << 'EOF'
+[profile dev]
+region = us-east-2
+output = json
+credential_process = ./credential-process.sh dev
+EOF
+
+    # Run validation check for relative paths (lines that DON'T start with /)
+    local relative_path_check=$(grep -E '^\s*credential_process\s*=' "$aws_config" | grep -vE '^\s*credential_process\s*=\s*/' || true)
+
+    assert_not_empty "$relative_path_check" "Should detect relative path in credential_process"
+
+    # Fix it with absolute path
+    local absolute_path="${TEST_HOME}/.aws/credential-process.sh"
+    cat > "$aws_config" << EOF
+[profile dev]
+region = us-east-2
+output = json
+credential_process = $absolute_path dev
+EOF
+
+    # Verify absolute path is used (should have NO lines that don't start with /)
+    local absolute_path_check=$(grep -E '^\s*credential_process\s*=' "$aws_config" | grep -vE '^\s*credential_process\s*=\s*/' && echo "found_relative" || echo "all_absolute")
+
+    assert_equals "all_absolute" "$absolute_path_check" "Should use absolute paths in credential_process"
+
+    # Verify the path starts with /
+    local credential_line=$(grep 'credential_process' "$aws_config")
+    assert_contains "$credential_line" "credential_process = /" "Credential process should use absolute path starting with /"
+}
+
 # Run tests with setup/teardown
 describe "End-to-End Setup Simulation Tests"
 
@@ -392,6 +428,7 @@ run_test "Stow symlink simulation" test_stow_symlink_simulation
 describe "Configuration Creation Tests"
 
 run_test "AWS profile allowlist creation" test_aws_profile_allowlist_creation
+run_test "Credential process absolute paths" test_credential_process_absolute_paths
 run_test "Git configuration" test_git_configuration
 run_test "Platform-specific setup" test_platform_specific_setup
 

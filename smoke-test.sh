@@ -70,6 +70,16 @@ test_aws_functionality() {
                 if command -v aws &>/dev/null; then
                     print_success "AWS CLI available"
                     
+                    # Check for relative paths in AWS config (common error on macOS)
+                    if [[ -f .aws/config ]]; then
+                        if grep -E '^\s*credential_process\s*=' .aws/config | grep -qvE '^\s*credential_process\s*=\s*/'; then
+                            print_error "AWS config uses relative paths (will fail at runtime)"
+                            echo "  Run: ./validate.sh for fix instructions"
+                        else
+                            print_success "AWS config uses absolute paths"
+                        fi
+                    fi
+
                     # Test credential process (if configured)
                     if [[ -x .aws/credential-process.sh ]]; then
                         # Test with a likely profile (but don't fail if it doesn't exist)
