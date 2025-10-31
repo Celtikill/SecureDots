@@ -169,6 +169,31 @@ credential_process = /Users/username/.aws/credential-process.sh personal  # macO
 
 **Solutions:**
 
+> **🍎 CRITICAL FOR macOS USERS:**
+>
+> On macOS, AWS CLI is **particularly strict** about absolute paths. The `./credential-process.sh` syntax will **NEVER work** on macOS, even if the script is in `~/.aws/`.
+>
+> **You MUST remove the `./` prefix and use the full absolute path:**
+> ```bash
+> # ❌ WILL NOT WORK on macOS:
+> credential_process = ./credential-process.sh personal
+>
+> # ✅ CORRECT for macOS:
+> credential_process = /Users/yourusername/.aws/credential-process.sh personal
+> ```
+>
+> **Quick fix for macOS:**
+> ```bash
+> # Get your absolute path
+> echo "$HOME/.aws/credential-process.sh"
+>
+> # Fix the config (creates backup)
+> sed -i.bak "s|credential_process = \./credential-process.sh|credential_process = $HOME/.aws/credential-process.sh|g" ~/.aws/config
+>
+> # Verify the fix
+> grep credential_process ~/.aws/config
+> ```
+
 1. **Check if script exists and is executable:**
    ```bash
    ls -la ~/.aws/credential-process.sh

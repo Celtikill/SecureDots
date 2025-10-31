@@ -276,7 +276,9 @@ AWS requires absolute paths for `credential_process` configuration. This is a st
 - ❌ Environment variables (`$HOME`, `$USER`) are not expanded
 - ✅ Only absolute paths (e.g., `/home/user/.aws/...`, `/Users/user/.aws/...`) are valid
 
-**Reason**: The AWS CLI executes the credential process from its own working directory context. When AWS CLI invokes the script, the current working directory may not be `~/.aws/`, causing relative paths to fail with "No such file or directory" errors. This is particularly common on macOS systems.
+**Reason**: The AWS CLI executes the credential process from its own working directory context. When AWS CLI invokes the script, the current working directory may not be `~/.aws/`, causing relative paths to fail with "No such file or directory" errors.
+
+**macOS-Specific Behavior**: macOS is **particularly strict** about enforcing absolute paths for `credential_process`. The `./credential-process.sh` syntax will not work on macOS - you must remove the `./` prefix and use the full path like `/Users/username/.aws/credential-process.sh`. This is the most common configuration issue reported by macOS users.
 
 **Validation**: The `validate.sh` script checks for this issue and provides automatic fix commands. See [Troubleshooting Guide](guides/TROUBLESHOOTING.md#credential-process-script-not-found) for diagnosis and resolution steps.
 

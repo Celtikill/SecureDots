@@ -288,6 +288,7 @@ aws_switch dev && aws sts get-caller-identity
 ```
 
 ### ❓ **Having Problems?**
+- **🍎 macOS users getting `./credential-process.sh` errors?** You must use absolute paths (remove the `./` prefix). See [macOS troubleshooting](docs/guides/TROUBLESHOOTING.md#credential-process-script-not-found)
 - **Setup issues:** See [Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md)
 - **Command help:** Run `dotfiles_help` or `dotfiles_examples`
 - **Complete guidance:** Read [USER-GUIDE.md](docs/USER-GUIDE.md)
