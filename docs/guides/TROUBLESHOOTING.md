@@ -148,18 +148,81 @@ pass git commit -m "Initial commit"
 ### Credential Process Script Not Found
 
 **Symptoms:**
-- Error: "credential_process: command not found"
+- Error: "`credential_process: command not found`"
+- Error: "`[Errno 2] No such file or directory: './credential-process.sh'`" (common on macOS)
 - AWS CLI fails to authenticate
 
-**Solutions:**
-```bash
-# Check script exists and is executable
-ls -la ~/.aws/credential-process.sh
-chmod +x ~/.aws/credential-process.sh
+**Root Cause:**
+AWS requires **absolute paths** for `credential_process` configuration. Relative paths (like `./credential-process.sh`, `~/credential-process.sh`, or `../credential-process.sh`) will fail because AWS CLI executes the script from its own working directory, not from `~/.aws/`.
 
-# Test script directly
-~/.aws/credential-process.sh --help
+**Common Mistakes:**
+```ini
+# ❌ These will FAIL:
+credential_process = ./credential-process.sh personal
+credential_process = ~/credential-process.sh personal
+credential_process = $HOME/.aws/credential-process.sh personal  # Variables not expanded
+
+# ✅ This works:
+credential_process = /home/username/.aws/credential-process.sh personal  # Linux
+credential_process = /Users/username/.aws/credential-process.sh personal  # macOS
 ```
+
+**Solutions:**
+
+1. **Check if script exists and is executable:**
+   ```bash
+   ls -la ~/.aws/credential-process.sh
+   chmod +x ~/.aws/credential-process.sh
+   ```
+
+2. **Diagnose path issues:**
+   ```bash
+   # Check your current AWS config
+   grep credential_process ~/.aws/config
+
+   # Look for relative paths (these are the problem)
+   grep credential_process ~/.aws/config | grep -E '\./|~/|\.\./|= [^/]'
+   ```
+
+3. **Fix relative paths automatically:**
+   ```bash
+   # Get your correct absolute path
+   echo "$HOME/.aws/credential-process.sh"
+
+   # Fix common relative path patterns (creates backup as config.bak)
+   sed -i.bak "s|credential_process = \./credential-process.sh|credential_process = $HOME/.aws/credential-process.sh|g" ~/.aws/config
+   sed -i.bak "s|credential_process = ~/\.|credential_process = $HOME/.|g" ~/.aws/config
+   sed -i.bak "s|credential_process = \$HOME|credential_process = $HOME|g" ~/.aws/config
+   ```
+
+4. **Manual fix:**
+   ```bash
+   # Edit config file
+   nano ~/.aws/config
+
+   # Replace relative paths with absolute paths
+   # macOS example: /Users/yourname/.aws/credential-process.sh
+   # Linux example: /home/yourname/.aws/credential-process.sh
+   ```
+
+5. **Test the script directly:**
+   ```bash
+   # Test with absolute path
+   ~/.aws/credential-process.sh dev
+
+   # Should output JSON with credentials
+   ```
+
+6. **Verify the fix:**
+   ```bash
+   # Run AWS command
+   aws sts get-caller-identity
+
+   # Should succeed without errors
+   ```
+
+**Prevention:**
+Run `./validate.sh` from your dotfiles directory to catch this issue before it causes problems.
 
 ### Invalid JSON Output
 

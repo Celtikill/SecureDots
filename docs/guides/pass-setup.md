@@ -430,6 +430,31 @@ output = json
 credential_process = /home/user/.aws/credential-process.sh work
 ```
 
+> **⚠️ IMPORTANT: Absolute Paths Required**
+>
+> AWS requires **absolute paths** for `credential_process`. Relative paths like `./credential-process.sh`, `~/credential-process.sh`, or `../credential-process.sh` **will fail** with errors like:
+> ```
+> [Errno 2] No such file or directory: './credential-process.sh'
+> ```
+>
+> **Get your correct absolute path:**
+> ```bash
+> # This shows your absolute path
+> echo "$HOME/.aws/credential-process.sh"
+>
+> # macOS example: /Users/yourname/.aws/credential-process.sh
+> # Linux example: /home/yourname/.aws/credential-process.sh
+> ```
+>
+> **Why this matters:**
+> - AWS CLI executes `credential_process` from its own working directory
+> - Relative paths won't resolve correctly from that context
+> - Environment variables like `$HOME` are not expanded in the config file
+> - Tilde (`~`) expansion doesn't work in `credential_process` settings
+>
+> **Validation:**
+> Run `./validate.sh` from your dotfiles directory to check for this issue.
+
 ## Troubleshooting
 
 See the main [Troubleshooting Guide](TROUBLESHOOTING.md) for common issues.
