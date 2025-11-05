@@ -19,8 +19,10 @@ export AWS_SHARED_CREDENTIALS_FILE="/dev/null"
 
 # Lazy loading: Set default profile only if AWS_PROFILE is not already set
 # Interactive profile selection is disabled by default for lazy loading
+# Updated 2025-11-05: Changed default from 'dev' to 'management-dev'
+# Reason: 'dev' profile was actually for management account work, not dev environment
 if [[ -z "$AWS_PROFILE" ]]; then
-    export AWS_PROFILE="${AWS_PROFILE_DEFAULT:-dev}"
+    export AWS_PROFILE="${AWS_PROFILE_DEFAULT:-management-dev}"
 fi
 
 # Utility functions
