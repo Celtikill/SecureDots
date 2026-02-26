@@ -59,6 +59,7 @@ setopt NO_BEEP INTERACTIVE_COMMENTS
 # CUSTOMIZE: Create ~/.zshrc.local for your personal settings
 # Example ~/.zshrc.local contents:
 #   export ENABLE_CONDA=1
+#   export ENABLE_GEMINI_CODE_ASSIST=1
 #   export ZSH_VERBOSE=true
 #   alias myproject='cd ~/dev/myproject'
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
@@ -102,6 +103,11 @@ done
 if [[ "${DISABLE_AWS_INTEGRATION:-false}" != "true" ]] && [[ -f "${ZSH_CONFIG_DIR}/aws.zsh" ]]; then
     source "${ZSH_CONFIG_DIR}/aws.zsh"
 fi
+
+# Gemini Code Assist: AI-assisted coding with API key and ADC support
+# Enable with: export ENABLE_GEMINI_CODE_ASSIST=1 in ~/.zshrc.local
+[[ -z "${ZSH_CONFIG_DIR:-}" ]] && ZSH_CONFIG_DIR="${HOME}/.config/zsh"
+[[ -n "$ENABLE_GEMINI_CODE_ASSIST" ]] && [[ -f "${ZSH_CONFIG_DIR}/gemini.zsh" ]] && source "${ZSH_CONFIG_DIR}/gemini.zsh"
 
 # ===== GPG Configuration =====
 # Fix GPG TTY for commit signing (prevents git commit freezing)

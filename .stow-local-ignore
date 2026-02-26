@@ -27,6 +27,7 @@ LICENSE
 # ===== Directories =====
 setup
 docs
+test
 
 # ===== Version Control Systems =====
 RCS
@@ -137,6 +138,10 @@ auth\..*         # authentication files
 \.config/.*/.*secret.*
 \.config/.*/.*token.*
 \.config/.*/.*password.*
+
+# ===== Gemini Code Assist =====
+# gcloud ADC credentials are managed by gcloud tooling (not stow-linked)
+\.config/gcloud/application_default_credentials\.json
 
 # ===== Platform-Specific Files =====
 # Conda environments contain platform-specific paths
