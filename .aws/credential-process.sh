@@ -44,18 +44,27 @@ debug_log() {
 error_output() {
     local message="$1"
     local code="${2:-CredentialProcessError}"
-    
+
     # Log to stderr for debugging
     echo -e "${RED}[ERROR]${NC} $message" >&2
-    
+
     # Output JSON error format expected by AWS CLI
-    cat <<JSON
-{
-  "Version": 1,
-  "Code": "$code",
-  "Message": "$message"
-}
-JSON
+    # Use jq for safe escaping to prevent JSON injection from error messages
+    if command -v jq &>/dev/null; then
+        jq -n \
+            --argjson version 1 \
+            --arg code "$code" \
+            --arg msg "$message" \
+            '{Version: $version, Code: $code, Message: $msg}'
+    else
+        # Fallback: sanitize values to prevent JSON structure breakage
+        # Use printf instead of heredoc to avoid shell expansion of $() and backticks
+        message="${message//\\/\\\\}"
+        message="${message//\"/\\\"}"
+        code="${code//\\/\\\\}"
+        code="${code//\"/\\\"}"
+        printf '{\n  "Version": 1,\n  "Code": "%s",\n  "Message": "%s"\n}\n' "$code" "$message"
+    fi
     exit 1
 }
 
@@ -266,22 +275,45 @@ main() {
     
     # Check for session token (for temporary credentials)
     local session_token=$(get_session_token "$profile")
-    
-    # Build JSON output
-    local json_output="{
+
+    # Build JSON output using jq for safe escaping (prevents JSON injection)
+    local json_output=""
+    if command -v jq &>/dev/null; then
+        if [[ -n "$session_token" ]]; then
+            json_output=$(jq -n \
+                --argjson version 1 \
+                --arg ak "$access_key_id" \
+                --arg sk "$secret_access_key" \
+                --arg st "$session_token" \
+                '{Version: $version, AccessKeyId: $ak, SecretAccessKey: $sk, SessionToken: $st}')
+        else
+            json_output=$(jq -n \
+                --argjson version 1 \
+                --arg ak "$access_key_id" \
+                --arg sk "$secret_access_key" \
+                '{Version: $version, AccessKeyId: $ak, SecretAccessKey: $sk}')
+        fi
+    else
+        # Fallback without jq: sanitize values to prevent JSON injection
+        # Strip characters that could break JSON structure
+        access_key_id="${access_key_id//[\"\\]/}"
+        secret_access_key="${secret_access_key//[\"\\]/}"
+        session_token="${session_token//[\"\\]/}"
+
+        json_output="{
   \"Version\": 1,
   \"AccessKeyId\": \"${access_key_id}\",
   \"SecretAccessKey\": \"${secret_access_key}\""
-    
-    # Add session token if present
-    if [[ -n "$session_token" ]]; then
-        json_output+=",
+
+        if [[ -n "$session_token" ]]; then
+            json_output+=",
   \"SessionToken\": \"${session_token}\""
-    fi
-    
-    json_output+="
+        fi
+
+        json_output+="
 }"
-    
+    fi
+
     # Output the credentials
     echo "$json_output"
     
