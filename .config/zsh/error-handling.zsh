@@ -157,25 +157,26 @@ validate_directory() {
 }
 
 # Safe network operation with retry
+# Usage: safe_network_op curl -fsSL https://example.com
+# Pass the command and arguments directly (not as a string)
 safe_network_op() {
-    local operation="$1"
     local max_retries=3
     local retry_delay=2
-    
+
     for ((i=1; i<=max_retries; i++)); do
-        print_debug "Attempting network operation (attempt $i/$max_retries): $operation"
-        
-        if eval "$operation"; then
+        print_debug "Attempting network operation (attempt $i/$max_retries): $*"
+
+        if "$@"; then
             return 0
         fi
-        
+
         if [[ $i -lt $max_retries ]]; then
             print_warning "Network operation failed, retrying in ${retry_delay}s..."
             sleep "$retry_delay"
             retry_delay=$((retry_delay * 2))
         fi
     done
-    
+
     handle_error "network_error" "Network operation failed after $max_retries attempts" "Check network connectivity and try again"
     return 1
 }

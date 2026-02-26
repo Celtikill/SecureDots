@@ -140,6 +140,8 @@ auth\..*         # authentication files
 \.config/.*/.*password.*
 
 # ===== Gemini Code Assist =====
+# OAuth tokens cached by Gemini CLI (browser login flow)
+\.gemini
 # gcloud ADC credentials are managed by gcloud tooling (not stow-linked)
 \.config/gcloud/application_default_credentials\.json
 
