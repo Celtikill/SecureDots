@@ -71,6 +71,11 @@ dotfiles_help() {
     echo "  pass-setup.md       - Password manager setup"
     echo "  gpg-mgmnt.md        - GPG key management"
     echo
+    echo "Gemini Code Assist (if enabled):"
+    echo "  gemini_check         - Verify credentials are set and ADC file exists"
+    echo "  gemini_status        - Show current env var values (masked)"
+    echo "  gemini_clear         - Clear Gemini credentials from environment"
+    echo
     echo "📖 Quick Reference: QUICK-REFERENCE.md"
     echo "📚 Full Documentation: docs/USER-GUIDE.md"
 }
@@ -231,6 +236,13 @@ dotfiles_env() {
     echo "  CONDA_CUSTOM_PATH   - Custom conda installation path"
     echo "  Current value:      ${CONDA_CUSTOM_PATH:-Not set}"
     echo
+    echo "Gemini Code Assist:"
+    echo "  ENABLE_GEMINI_CODE_ASSIST  Enable Gemini module (opt-in)"
+    echo "  Current value:      ${ENABLE_GEMINI_CODE_ASSIST:-(not set)}"
+    echo
+    echo "  GOOGLE_CLOUD_LOCATION      Override GCP region (default: us-central1)"
+    echo "  Current value:      ${GOOGLE_CLOUD_LOCATION:-us-central1}"
+    echo
     echo "To set any of these, add to ~/.zshrc.local:"
     echo "  echo 'export ZSH_VERBOSE=true' >> ~/.zshrc.local"
 }
@@ -293,6 +305,11 @@ dotfiles_functions() {
     echo "GPG Functions (if configured):"
     echo "  gpg_card_status     - Check GPG card status"
     echo "  mount_gpg_vault     - Mount GPG vault"
+    echo
+    echo "Gemini Functions (if ENABLE_GEMINI_CODE_ASSIST=1):"
+    echo "  gemini_check        - Verify credentials and ADC file"
+    echo "  gemini_status       - Show env var values (masked)"
+    echo "  gemini_clear        - Clear credentials from environment"
     echo
     echo "For detailed help on any function, run: <function_name> --help"
 }
