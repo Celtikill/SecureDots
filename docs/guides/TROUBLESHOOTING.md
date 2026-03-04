@@ -318,7 +318,8 @@ export AWS_PROFILE=dev
 echo $SSH_AUTH_SOCK
 
 # Restart GPG SSH setup
-gpg_ssh_restart
+gpgconf --kill gpg-agent
+gpg-connect-agent updatestartuptty /bye
 
 # Verify SSH keys are available
 ssh-add -l
@@ -432,10 +433,13 @@ exec zsh
 - Our configuration includes fallback protection to prevent this issue
 - If you still see errors, ensure Oh My Zsh is properly installed
 
-#### Other Theme Issues
+<details>
+<summary><strong>Legacy Theme Issues (Agnoster/Powerline)</strong></summary>
+
+> **Note:** Pure is the default theme and requires no special fonts. The Agnoster/Powerline themes below are legacy options. `TERMINAL_HAS_POWERLINE` defaults to `false`.
 
 **Symptoms:**
-- Strange characters in prompt (boxes, question marks) 
+- Strange characters in prompt (boxes, question marks)
 - Agnoster theme not displaying properly
 - AWS profile not showing in prompt
 
@@ -443,7 +447,7 @@ exec zsh
 ```bash
 # Check terminal capabilities
 echo "256-color: ${TERMINAL_HAS_256_COLOR:-unknown}"
-echo "Unicode: ${TERMINAL_HAS_UNICODE:-unknown}" 
+echo "Unicode: ${TERMINAL_HAS_UNICODE:-unknown}"
 echo "Powerline: ${TERMINAL_HAS_POWERLINE:-unknown}"
 
 # Install powerline fonts (for Agnoster theme)
@@ -462,8 +466,10 @@ exec zsh
 
 **Font Installation per Platform:**
 - **macOS**: `brew install font-fira-code-nerd-font`
-- **Ubuntu/Debian**: `apt-get install fonts-powerline fonts-firacode` 
+- **Ubuntu/Debian**: `apt-get install fonts-powerline fonts-firacode`
 - **WSL**: Install fonts in Windows and configure Windows Terminal
+
+</details>
 
 ### AWS Profile Display Issues
 
@@ -690,7 +696,7 @@ time ~/.aws/credential-process.sh dev
 gpg-connect-agent reloadagent /bye
 
 # Use credential caching
-aws configure set credential_process "~/.aws/credential-process.sh dev" --profile dev
+aws configure set credential_process "$HOME/.aws/credential-process.sh dev" --profile dev
 ```
 
 ## Debug Information Collection

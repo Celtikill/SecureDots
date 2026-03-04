@@ -14,10 +14,7 @@
 
 *Essential commands for daily use - enterprise-grade local configuration*
 
-<!-- Skip to main content landmark for screen readers -->
-<a href="#first-time-setup" class="sr-only">Skip to setup instructions</a>
-
-## 🚀 First-Time Setup
+## First-Time Setup
 
 <!-- Cognitive load reduction: Clear expectation setting -->
 <details open>
@@ -45,14 +42,14 @@ git --version && stow --version && zsh --version && gpg --version && pass versio
 <details open>
 <summary><strong>Choose Your Setup Level</strong></summary>
 
-**🔰 Basic Setup (15-20 minutes):**
+**Basic Setup (15-20 minutes):**
 ```bash
 ./setup/setup-simple.sh
 ```
 *What this does:* Installs shell configuration, vim setup, basic security. Good for personal use.
 *Requirements:* Standard tools (git, stow, zsh, gpg, pass)
 
-**🔒 Advanced Setup (30-45 minutes):**
+**Advanced Setup (30-45 minutes):**
 ```bash
 ./setup/setup-secure-zsh.sh
 ```
@@ -81,9 +78,11 @@ git --version && stow --version && zsh --version && gpg --version && pass versio
 ### Help & Status
 ```bash
 dotfiles_help              # Show all available functions
-dotfiles_examples           # See real workflow examples  
+dotfiles_examples           # See real workflow examples
 dotfiles_customize          # Customization guide
 dotfiles_config             # Show current configuration
+dotfiles_status             # Check what's working and what needs attention
+dotfiles_security           # Explain security model and architecture
 ```
 
 ### AWS Profile Management
@@ -128,6 +127,16 @@ penv_clear                  # Clear loaded credentials
 pass show aws/dev/access-key-id    # View stored credential
 ```
 
+### Gemini AI (Optional)
+
+Requires opt-in via `ENABLE_GEMINI=true` in `~/.zshrc.local`.
+
+```bash
+gemini_check               # Verify credentials are set and ADC file exists
+gemini_status              # Show current env var values (masked)
+gemini_clear               # Clear Gemini credentials from environment
+```
+
 ### Common Workflows
 
 **Switch AWS Environment:**
@@ -151,11 +160,11 @@ aws_current                 # Check current AWS profile
 gpg --card-status           # Check hardware key (if using)
 ```
 
-## 🆘 Troubleshooting Quick Fixes
+## Troubleshooting Quick Fixes
 
 <!-- Decision tree for common problems -->
 <details>
-<summary><strong>🔧 Shell/Configuration Problems</strong></summary>
+<summary><strong>Shell/Configuration Problems</strong></summary>
 
 **Problem:** Commands like `dotfiles_help` not found
 
@@ -177,7 +186,7 @@ dotfiles_help
 </details>
 
 <details>
-<summary><strong>☁️ AWS Credentials Problems</strong></summary>
+<summary><strong>AWS Credentials Problems</strong></summary>
 
 **Problem:** "AWS credentials not found" or similar error
 
@@ -201,7 +210,7 @@ pass ls                     # Should show aws/profile entries
 </details>
 
 <details>
-<summary><strong>🔐 GPG/Security Problems</strong></summary>
+<summary><strong>GPG/Security Problems</strong></summary>
 
 **Problem:** GPG operations failing or hanging
 
@@ -224,20 +233,6 @@ gpg --card-status           # Should show card details
 
 </details>
 
-### Common Issues
-
-**"Command not found"**
-- Run: `source ~/.zshrc`
-- Or restart your terminal
-
-**"AWS credentials not found"**  
-- Run: `aws_switch dev` (or your profile)
-- Check: `pass ls` to see stored credentials
-
-**"GPG agent error"**
-- Run: `gpg-connect-agent reloadagent /bye`
-- Check: `gpg --card-status` if using hardware key
-
 ## File Locations
 
 ```bash
@@ -247,32 +242,18 @@ gpg --card-status           # Should show card details
 ~/dotfiles/                 # This repository
 ```
 
-## 🆘 Troubleshooting Quick Fixes
-
-### System Not Working?
-```bash
-# Step 1: Reload configuration
-source ~/.zshrc
-
-# Step 2: Check system status  
-dotfiles_status
-
-# Step 3: Run health check
-./validate.sh
-```
-
 ### Still Need Help?
 
-**📚 Documentation:**
+**Documentation:**
 - [Complete User Guide](docs/USER-GUIDE.md) - Full setup and usage
 - [Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md) - Detailed problem solving
 - [Architecture Details](docs/ARCHITECTURE.md) - Technical implementation
 
-**🔗 Support Channels:**
+**Support Channels:**
 - [GitHub Issues](https://github.com/yourusername/securedots/issues) - Bug reports and features
 - Security issues: **celtikill@celtikill.io** - Private disclosure
 
-**🔍 Accessibility:**
+**Accessibility:**
 - All documentation follows WCAG 2.1 AA standards
 - Screen reader compatible
 - High contrast mode supported
