@@ -22,11 +22,11 @@
 
 > **⚠️ Opinionated Setup:** This repository reflects my personal development preferences and workflow opinions. Tool choices (vim, zsh, conda, Claude AI configs) represent my individual preferences - not universal recommendations. Customize to match your own workflow needs.
 
-## 🎯 How to Use This Repository
+## How to Use This Repository
 
 <!-- Progressive disclosure based on user journey -->
 <details open>
-<summary><strong>👤 Personal Use</strong> (Most Common)</summary>
+<summary><strong>Personal Use</strong> (Most Common)</summary>
 
 **Perfect for individual developers who want:**
 - Professional credential management setup
@@ -38,7 +38,7 @@
 
 <!-- Decision support for user journey optimization -->
 <details>
-<summary><strong>🤔 Is This Right for You?</strong></summary>
+<summary><strong>Is This Right for You?</strong></summary>
 
 ### ✅ **Perfect for:**
 - Developers working with multiple AWS accounts/profiles
@@ -59,7 +59,7 @@
 </details>
 
 <details>
-<summary><strong>👥 Deploy for Your Team/Organization</strong></summary>
+<summary><strong>Deploy for Your Team/Organization</strong></summary>
 
 **Ideal for development teams who need:**
 - Standardized security practices across developers
@@ -71,7 +71,7 @@
 </details>
 
 <details>
-<summary><strong>🔍 Evaluation/Research</strong></summary>
+<summary><strong>Evaluation/Research</strong></summary>
 
 **For security teams and architects evaluating:**
 - Technical implementation details
@@ -87,7 +87,7 @@
 
 ## Quick Setup Paths
 
-### 👋 New to secure development?  
+### New to secure development?  
 **Quick setup with software security (15-20 minutes)**
 
 <!-- Mobile-friendly command blocks -->
@@ -99,10 +99,10 @@ git clone https://github.com/yourusername/securedots.git ~/dotfiles
 cd ~/dotfiles && ./setup/setup-simple.sh
 ```
 
-### 🔄 Have existing dotfiles?
+### Have existing dotfiles?
 **Migration notes and compatibility info** → [USER-GUIDE.md](docs/USER-GUIDE.md#migration-from-existing-dotfiles)
 
-### 🔍 Evaluating for your team?  
+### Evaluating for your team?  
 **Security model, compliance, and architecture** → [SECURITY.md](SECURITY.md) and [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ---
@@ -111,7 +111,7 @@ cd ~/dotfiles && ./setup/setup-simple.sh
 
 <!-- Core benefits with progressive disclosure for details -->
 <details open>
-<summary><strong>🏢 Enterprise-Grade Security Architecture</strong></summary>
+<summary><strong>Enterprise-Grade Security Architecture</strong></summary>
 
 **Core Security Features:**
 - ✅ **Zero plaintext credentials** stored anywhere in your system  
@@ -132,7 +132,7 @@ cd ~/dotfiles && ./setup/setup-simple.sh
 </details>
 
 <details open>
-<summary><strong>⚡ Developer Productivity Features</strong></summary>
+<summary><strong>Developer Productivity Features</strong></summary>
 
 **Daily Workflow Benefits:**
 - ✅ **One-command AWS profile switching** with encrypted credential storage  
@@ -154,7 +154,7 @@ cd ~/dotfiles && ./setup/setup-simple.sh
 </details>
 
 <details>
-<summary><strong>📋 Professional Documentation Standards</strong></summary>
+<summary><strong>Professional Documentation Standards</strong></summary>
 
 **Documentation Quality:**
 - ✅ **CISO-ready** security model documentation
@@ -180,7 +180,7 @@ cd ~/dotfiles && ./setup/setup-simple.sh
 
 ## Prerequisites & Your Responsibilities
 
-### 📋 **Before You Begin**
+### Before You Begin
 
 **Required Tools** (automatically checked during setup):
 - `git` - Version control and repository cloning
@@ -210,28 +210,28 @@ sudo apt-get install git stow zsh gnupg pass
 sudo pacman -S git stow zsh gnupg pass
 ```
 
-### ⚡ **Your Security Responsibilities**
+### Your Security Responsibilities
 
 To safely use this system, you must:
 
-1. **🔑 Secure Your Master Keys**
+1. **Secure Your Master Keys**
    - Back up GPG keys in offline, secure locations
    - Use strong passphrases for GPG keys
    - Consider hardware security keys for critical environments
 
-2. **🔄 Maintain Your Credentials**  
+2. **Maintain Your Credentials**  
    - Rotate AWS/cloud credentials regularly
    - Monitor access logs and unusual activity
    - Keep pass store backed up with `pass git push`
 
-3. **📖 Understand the System**
+3. **Understand the System**
    - Review scripts before running them
    - Follow security best practices in documentation
    - Keep software dependencies updated
 
 **⚠️ Important:** This is **your security system** - no warranties provided. See [SECURITY.md](SECURITY.md) for complete legal details.
 
-**🏗️ Deploying for Your Organization?** See [TEMPLATE.md](TEMPLATE.md) for architecture deployment guidance.
+**Deploying for Your Organization?** See [TEMPLATE.md](TEMPLATE.md) for architecture deployment guidance.
 
 ## Quick Commands
 
@@ -256,7 +256,7 @@ dotfiles_examples
 
 ## Advanced Options
 
-**🔒 Hardware Security Setup** (teams/compliance):
+**Hardware Security Setup** (teams/compliance):
 ```bash
 cd ~/dotfiles && ./setup/setup-secure-zsh.sh
 ```
@@ -265,19 +265,19 @@ cd ~/dotfiles && ./setup/setup-secure-zsh.sh
 
 Once setup completes successfully, follow this path to start using SecureDots:
 
-### ✅ **1. Verify Everything Works**
+### 1. Verify Everything Works
 ```bash
 ./validate.sh                  # Run comprehensive health checks
 ```
 **Expected result:** All checks show ✅ (green checkmarks)
 
-### 🚀 **2. Learn Essential Commands** 
+### 2. Learn Essential Commands
 ```bash
 dotfiles_help                 # See all available functions
 ```
 **Next:** Bookmark [QUICK-REFERENCE.md](QUICK-REFERENCE.md) for daily use commands
 
-### 🔑 **3. Add Your First Credentials**
+### 3. Add Your First Credentials
 ```bash
 # Add AWS credentials (replace 'dev' with your profile name)
 pass insert aws/dev/access-key-id
@@ -287,18 +287,18 @@ pass insert aws/dev/secret-access-key
 aws_switch dev && aws sts get-caller-identity
 ```
 
-### ❓ **Having Problems?**
-- **🍎 macOS users getting `./credential-process.sh` errors?** You must use absolute paths (remove the `./` prefix). See [macOS troubleshooting](docs/guides/TROUBLESHOOTING.md#credential-process-script-not-found)
+### Having Problems?
+- **macOS users getting `./credential-process.sh` errors?** You must use absolute paths (remove the `./` prefix). See [macOS troubleshooting](docs/guides/TROUBLESHOOTING.md#credential-process-script-not-found)
 - **Setup issues:** See [Troubleshooting Guide](docs/guides/TROUBLESHOOTING.md)
 - **Command help:** Run `dotfiles_help` or `dotfiles_examples`
 - **Complete guidance:** Read [USER-GUIDE.md](docs/USER-GUIDE.md)
 
 ## Documentation
 
-- **📖 [User Guide](docs/USER-GUIDE.md)** - Complete setup and usage reference
-- **📱 [Quick Reference](QUICK-REFERENCE.md)** - Essential commands for daily use
-- **🔧 [Troubleshooting](docs/guides/TROUBLESHOOTING.md)** - Solutions for common issues
-- **🏗️ [Architecture](docs/ARCHITECTURE.md)** - Technical details and security model
+- **[User Guide](docs/USER-GUIDE.md)** - Complete setup and usage reference
+- **[Quick Reference](QUICK-REFERENCE.md)** - Essential commands for daily use
+- **[Troubleshooting](docs/guides/TROUBLESHOOTING.md)** - Solutions for common issues
+- **[Architecture](docs/ARCHITECTURE.md)** - Technical details and security model
 
 ## System Requirements
 

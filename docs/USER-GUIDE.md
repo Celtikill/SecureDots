@@ -28,16 +28,13 @@
 
 </details>
 
-<!-- Screen reader navigation aid -->
-<a href="#before-you-begin" class="sr-only">Skip to main content</a>
-
 *Complete setup and usage reference for professional local environment configuration*
 
 > **What are "dotfiles"?** Dotfiles are configuration files for Unix-like systems that typically start with a dot (like `.zshrc`, `.vimrc`). They customize your shell, editor, and other tools. SecureDots provides a secure, professional-grade dotfiles system with encrypted credential management.
 
 ## Before You Begin
 
-### 📋 **Readiness Checklist**
+### Readiness Checklist
 
 Before starting setup, ensure you have:
 
@@ -63,23 +60,23 @@ Before starting setup, ensure you have:
 | `gpg` | Encryption backend | `gpg --version` | Package manager: `brew install gnupg` / `apt install gnupg` |
 | `pass` | Password store | `pass version` | Package manager: `brew install pass` / `apt install pass` |
 
-### 🎯 **Your Security Responsibilities**
+### Your Security Responsibilities
 
 **SecureDots provides enterprise-grade local configuration.** You are responsible for:
 
-**🔑 Key Management**
+**Key Management**
 - Creating secure GPG key passphrases
 - Backing up GPG keys to offline storage
 - Protecting hardware security keys (if used)
 - Understanding recovery procedures
 
-**🔄 Operational Security**  
+**Operational Security**  
 - Rotating credentials regularly (quarterly recommended)
 - Monitoring for unauthorized access
 - Keeping dependencies updated
 - Following incident response procedures
 
-**📖 Ongoing Education**
+**Ongoing Education**
 - Reading security updates and advisories
 - Understanding what the scripts do before running them
 - Staying current with security best practices
@@ -93,17 +90,17 @@ Before starting setup, ensure you have:
 
 **Choose your setup path:**
 
-### 👋 New Users
+### New Users
 ```bash
 git clone https://github.com/yourusername/securedots.git ~/dotfiles
 cd ~/dotfiles && ./setup/setup-simple.sh
 source ~/.zshrc && dotfiles_help
 ```
 
-### 🔄 Existing Dotfiles Users
+### Existing Dotfiles Users
 **Migration guide:** [Moving from existing configurations](#migration-from-existing-dotfiles)
 
-### 🔍 Security Teams Evaluating
+### Security Teams Evaluating
 **Technical details:** [ARCHITECTURE.md](ARCHITECTURE.md) and [SECURITY.md](../SECURITY.md)
 
 ---
@@ -116,7 +113,7 @@ source ~/.zshrc && dotfiles_help
 ✅ **GPG-encrypted** password storage with `pass`  
 ✅ **Shell optimizations** for security and productivity
 
-### 🎯 **Feature Dependencies Matrix**
+### Feature Dependencies Matrix
 
 | Feature | Required Tools | Optional Tools | Skill Level |
 |---------|----------------|----------------|-------------|
@@ -128,17 +125,17 @@ source ~/.zshrc && dotfiles_help
 
 ## Setup Instructions
 
-### 🔰 Basic Security Setup (15 minutes)
+### Basic Security Setup (15 minutes)
 - Software-only GPG encryption
 - Standard shell improvements
 - AWS credential process (no hardware keys)
 
-### 🔒 Advanced Security Setup (45 minutes)
+### Advanced Security Setup (45 minutes)
 - Hardware security key required
 - Air-gapped key generation (advanced users)
 - FIPS-140 compliant storage
 
-**📚 Details:** [Setup Options](#setup-levels)
+**Details:** [Setup Options](#setup-levels)
 
 ### Installation Commands
 
@@ -167,13 +164,13 @@ aws_check
 dotfiles_help
 ```
 
-**🎉 Done!** You now have encrypted credential management.
+**Done!** You now have encrypted credential management.
 
 ## Setup Levels
 
 Choose the security level that matches your needs:
 
-### 🔰 Basic Security Setup
+### Basic Security Setup
 
 **Good for:**
 - Individual developers
@@ -193,7 +190,7 @@ cd ~/dotfiles
 ./setup/setup-simple.sh
 ```
 
-### 🔒 Advanced Security Setup  
+### Advanced Security Setup
 
 **Good for:**
 - Team environments
@@ -217,7 +214,7 @@ cd ~/dotfiles
 - YubiKey 5 or compatible hardware security key
 - USB drive for secure storage (FIPS-140 recommended)
 
-### 🏰 Enterprise Security (Advanced Users)
+### Enterprise Security (Advanced Users)
 
 **Good for:** Security teams, regulated industries, air-gapped environments
 
@@ -225,7 +222,7 @@ cd ~/dotfiles
 
 **Time:** 2-3 hours
 
-**📚 See:** [GPG Management Playbook](guides/gpg-mgmnt.md)
+**See:** [GPG Management Playbook](guides/gpg-mgmnt.md)
 
 ## Daily Usage
 
@@ -272,7 +269,7 @@ AWS_PROFILE=new-profile aws sts get-caller-identity  # Test immediately
 ### Managing AWS Credentials
 
 <details>
-<summary>🔧 Add credentials for a new AWS account</summary>
+<summary>Add credentials for a new AWS account</summary>
 
 ```bash
 # Interactive method
@@ -289,7 +286,7 @@ AWS_PROFILE=new-account aws sts get-caller-identity
 </details>
 
 <details>
-<summary>🔄 Switch between AWS environments</summary>
+<summary>Switch between AWS environments</summary>
 
 ```bash
 # Switch to development
@@ -307,7 +304,7 @@ aws configure list-profiles
 </details>
 
 <details>
-<summary>🔍 Debug AWS credential issues</summary>
+<summary>Debug AWS credential issues</summary>
 
 ```bash
 # Enable debug mode
@@ -327,7 +324,7 @@ pass show aws/dev/access-key-id
 ### Working with GPG and Pass
 
 <details>
-<summary>🔐 View and manage stored secrets</summary>
+<summary>View and manage stored secrets</summary>
 
 ```bash
 # List all stored passwords
@@ -345,7 +342,7 @@ pass edit aws/dev/access-key-id
 </details>
 
 <details>
-<summary>🔑 Manage GPG keys and hardware tokens</summary>
+<summary>Manage GPG keys and hardware tokens</summary>
 
 ```bash
 # Check GPG key status
@@ -366,7 +363,7 @@ gpg-connect-agent updatestartuptty /bye
 ### SSH Authentication (Advanced)
 
 <details>
-<summary>🔐 Set up SSH with GPG keys</summary>
+<summary>Set up SSH with GPG keys</summary>
 
 **Prerequisites:** Advanced security setup with authentication subkey
 
@@ -381,7 +378,7 @@ ssh-copy-id -i ~/.ssh/id_gpg.pub user@server.com
 ssh user@server.com
 ```
 
-**📚 See:** [GPG SSH Authentication Guide](guides/gpg-ssh-auth.md) for complete setup
+**See:** [GPG SSH Authentication Guide](guides/gpg-ssh-auth.md) for complete setup
 </details>
 
 ## Troubleshooting
@@ -427,10 +424,10 @@ type dotfiles_help
 
 SecureDots uses the [Pure theme](https://github.com/sindresorhus/pure) by default for the zsh prompt. Pure is chosen for its:
 
-- **🎨 Minimalist design** - Clean, distraction-free prompt
-- **⚡ Performance** - Fast loading, no special fonts required  
-- **🔧 Reliability** - Works across all terminals and platforms
-- **🔍 Useful information** - Shows git status, command duration, etc.
+- **Minimalist design** - Clean, distraction-free prompt
+- **Performance** - Fast loading, no special fonts required
+- **Reliability** - Works across all terminals and platforms
+- **Useful information** - Shows git status, command duration, etc.
 
 ### Automated Installation
 
@@ -449,7 +446,7 @@ Pure theme is automatically installed during setup:
 If you need to manually configure Pure theme or the automated installation fails:
 
 <details>
-<summary>🔧 Manual Pure Theme Setup</summary>
+<summary>Manual Pure Theme Setup</summary>
 
 **Prerequisites:**
 - Oh My Zsh must be installed first
@@ -485,7 +482,7 @@ If you need to manually configure Pure theme or the automated installation fails
 If Pure theme doesn't meet your needs, you can switch to Oh My Zsh's built-in themes:
 
 <details>
-<summary>🎯 Switching to Alternative Themes</summary>
+<summary>Switching to Alternative Themes</summary>
 
 **Quick switch to robbyrussell (Oh My Zsh default):**
 
@@ -508,10 +505,10 @@ If Pure theme doesn't meet your needs, you can switch to Oh My Zsh's built-in th
 
 ### Get Help
 
-1. **📖 Check the troubleshooting guide:** [TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md)
-2. **🔍 Use built-in help:** `dotfiles_help`
-3. **🧪 Run diagnostics:** Built into setup scripts
-4. **📋 Collect debug info:** Use debug modes for detailed output
+1. **Check the troubleshooting guide:** [TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md)
+2. **Use built-in help:** `dotfiles_help`
+3. **Run diagnostics:** Built into setup scripts
+4. **Collect debug info:** Use debug modes for detailed output
 
 ## System Overview
 
@@ -519,9 +516,9 @@ If Pure theme doesn't meet your needs, you can switch to Oh My Zsh's built-in th
 
 Your setup has **three main layers of security**:
 
-1. **🔐 Encryption Layer**: GPG encrypts all sensitive data
-2. **🔑 Authentication Layer**: Hardware keys (optional) provide tamper-proof storage
-3. **🚫 Prevention Layer**: Configuration prevents accidental credential exposure
+1. **Encryption Layer**: GPG encrypts all sensitive data
+2. **Authentication Layer**: Hardware keys (optional) provide tamper-proof storage
+3. **Prevention Layer**: Configuration prevents accidental credential exposure
 
 **Key principle:** Never store plaintext secrets anywhere
 - All credentials encrypted at rest
@@ -538,7 +535,7 @@ Your setup has **three main layers of security**:
 | `.stow-local-ignore` | Prevents credential exposure | Automatically during setup |
 | `pass` password store | Encrypted credential storage | When adding/accessing secrets |
 
-**📚 Complete technical details:** [ARCHITECTURE.md](ARCHITECTURE.md)
+**Complete technical details:** [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ## File Organization
 
@@ -652,11 +649,18 @@ echo 'export CUSTOM_VAR="value"' >> ~/.zshrc.local
 dotfiles_help
 dotfiles_config
 dotfiles_functions
+dotfiles_status            # Check what's working and what needs attention
+dotfiles_security          # Explain security model and architecture
 
-# AWS management  
+# AWS management
 aws_switch <profile>
 aws_current
 aws_check
+
+# Gemini AI (optional, requires ENABLE_GEMINI=true)
+gemini_check               # Verify credentials are set and ADC file exists
+gemini_status              # Show current env var values (masked)
+gemini_clear               # Clear Gemini credentials from environment
 
 # Pass management
 pass ls
@@ -685,10 +689,10 @@ gpg --list-secret-keys
 
 **Having issues?** The documentation is designed to help you succeed:
 
-1. **🎯 Start with this guide** for your specific task
-2. **🔧 Check troubleshooting** for common issues
-3. **📚 Read detailed guides** for advanced topics
-4. **🛠️ Use built-in help** functions for quick reference
+1. **Start with this guide** for your specific task
+2. **Check troubleshooting** for common issues
+3. **Read detailed guides** for advanced topics
+4. **Use built-in help** functions for quick reference
 
 Remember: This system prioritizes **security over convenience**. The initial setup investment pays dividends in credential safety and peace of mind.
 

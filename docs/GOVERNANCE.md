@@ -16,7 +16,7 @@ This framework provides simple, practical governance for the secure dotfiles rep
 
 ### Change Types
 
-**🔴 Security Changes**
+**Security Changes**
 - Credential handling modifications (.aws/credential-process.sh)
 - GPG configuration changes  
 - Stow ignore pattern updates
@@ -24,7 +24,7 @@ This framework provides simple, practical governance for the secure dotfiles rep
 
 **Required:** Code review + security validation + testing
 
-**🟡 Feature Changes**
+**Feature Changes**
 - Shell function additions/modifications
 - Setup script improvements
 - New platform support
@@ -32,7 +32,7 @@ This framework provides simple, practical governance for the secure dotfiles rep
 
 **Required:** Functional testing + documentation updates
 
-**🟢 Documentation Changes**
+**Documentation Changes**
 - README updates
 - Guide improvements  
 - Comment additions
@@ -176,7 +176,7 @@ source ~/.zshrc              # Reload shell config
 ---
 
 **Document Version:** 2.0 (Simplified)  
-**Last Updated:** July 2025  
+**Last Updated:** March 2026  
 **Review Schedule:** Quarterly or as needed
 
 *This governance framework balances security requirements with practical usability. It replaces the previous complex framework with essential controls that actually enhance rather than hinder productivity.*

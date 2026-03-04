@@ -25,9 +25,6 @@
 
 </details>
 
-<!-- Skip navigation for screen readers -->
-<a href="#system-overview" class="sr-only">Skip to main content</a>
-
 ## System Overview
 
 This document provides a comprehensive architectural overview of the secure dotfiles system, designed for developers and system administrators who need to understand the technical implementation, security model, and component interactions.
@@ -48,7 +45,7 @@ All diagrams in this document follow WCAG 2.1 AA standards and include comprehen
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ### High-Level Architecture Diagram
 
@@ -212,7 +209,7 @@ This interaction sequence shows 8 participants (User, Terminal/Shell, AWS CLI, C
 
 ---
 
-## 🔧 Component Details
+## Component Details
 
 ### Shell Configuration Layer
 
@@ -241,12 +238,13 @@ done
 ```
 .config/zsh/
 ├── aliases.zsh          # Command shortcuts and conveniences
-├── aws.zsh             # AWS profile management and utilities  
+├── aws.zsh             # AWS profile management and utilities
 ├── conda.zsh           # Conda environment management (optional)
 ├── error-handling.zsh  # Error handling and logging
 ├── functions.zsh       # Utility functions and helpers
-├── gpg.zsh             # GPG integration (optional)
-├── gpg-auth.zsh        # GPG SSH authentication (optional)  
+├── gemini.zsh          # Gemini AI integration (optional)
+├── gpg.zsh             # GPG integration (created during secure setup)
+├── gpg-auth.zsh        # GPG SSH authentication (created during secure setup)
 └── platform.zsh        # OS-specific configurations
 ```
 
@@ -414,7 +412,7 @@ Strict file permissions enforce the principle of least privilege:
 
 ---
 
-## 🔒 Security Model
+## Security Model
 
 ### Defense-in-Depth Implementation
 
@@ -462,7 +460,7 @@ s2k-cipher-algo AES256
 
 ---
 
-## 🏭 Operational Architecture
+## Operational Architecture
 
 ### Startup and Initialization Flow
 
@@ -661,7 +659,7 @@ done
 
 ---
 
-## 🔄 Data Flow Architecture
+## Data Flow Architecture
 
 ### Configuration Data Flow
 
@@ -774,7 +772,7 @@ handle_error() {
 
 ---
 
-## 🔒 Security Architecture
+## Security Architecture
 
 ### Implemented Security Controls
 
@@ -832,7 +830,7 @@ pass ls                        # Encrypted store verification
 
 For comprehensive security policies and procedures, see [SECURITY.md](../SECURITY.md) and [GOVERNANCE.md](GOVERNANCE.md).
 
-## 📊 Performance Architecture
+## Performance Architecture
 
 ### Lazy Loading Strategy
 
@@ -879,7 +877,7 @@ fi
 
 ---
 
-## 🛠️ Maintenance Architecture
+## Maintenance Architecture
 
 ### Update Strategy
 
@@ -946,7 +944,9 @@ validate_system_health() {
 
 ---
 
-## 📈 Scalability Considerations
+## Scalability Considerations
+
+> **Note:** The features in this section describe planned/future capabilities and are not yet implemented.
 
 ### Multi-User Architecture
 
@@ -984,7 +984,9 @@ fi
 
 ---
 
-## 🔬 Testing Architecture
+## Testing Architecture
+
+> **Note:** The formal test framework described in this section is planned/future work. Current testing uses `validate.sh` and `smoke-test.sh`.
 
 ### Test Strategy
 
@@ -1028,7 +1030,9 @@ run_test_suite() {
 
 ---
 
-## 📚 Integration Points
+## Integration Points
+
+> **Note:** The integrations described in this section are planned/future capabilities and are not yet implemented.
 
 ### External System Integration
 

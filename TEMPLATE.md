@@ -16,26 +16,23 @@
 
 </details>
 
-<!-- Skip to main content -->
-<a href="#what-youre-deploying" class="sr-only">Skip to deployment information</a>
-
 *Guide for organizations implementing enterprise-grade local environment configuration*
 
 ## What You're Deploying
 
-### 🔐 **Core Security Architecture**
+### Core Security Architecture
 - **Zero-plaintext credential storage** using GPG encryption
 - **Hardware security key integration** for tamper-resistant authentication
 - **Multi-environment credential management** with AWS profile switching
 - **Comprehensive exposure prevention** through multiple security layers
 
-### ⚡ **Developer Productivity Features**
+### Developer Productivity Features
 - **One-command environment switching** (dev/staging/prod)
 - **Shell performance optimizations** without security compromise
 - **Cross-platform compatibility** (macOS, Linux, WSL2)
 - **Built-in security validation** and health checking
 
-### 🛡️ **Enterprise Security Controls**
+### Enterprise Security Controls
 - **Audit trail integration** through pass git logging
 - **Encrypted backup strategies** with recovery procedures
 - **Input validation** preventing injection and traversal attacks
@@ -47,7 +44,7 @@
 
 ### Phase 1: Core Security System (Required)
 
-**🔧 Deploy the Security Architecture**
+**Deploy the Security Architecture**
 
 - [ ] **Set Up Encryption Backend**
   ```bash
@@ -72,7 +69,7 @@
 
 ### Phase 2: Organizational Integration (Recommended)
 
-**🏢 Customize for Your Environment**
+**Customize for Your Environment**
 
 - [ ] **Configure Team Environments**
   - [ ] Set up your AWS profiles and regions in `.aws/config`
@@ -94,7 +91,7 @@
 
 ### Phase 3: Organizational Branding (Optional)
 
-**🎨 Make It Yours**
+**Make It Yours**
 
 - [ ] **Update Contact Information**
   ```bash
@@ -104,8 +101,10 @@
 
 - [ ] **Update Repository References**
   ```bash
-  # Find and replace in all .md files:
-  # "yourusername" → your GitHub organization
+  # Find and replace "yourusername" across ALL .md files:
+  grep -rl 'yourusername' *.md docs/**/*.md
+  # Then replace (preview first with grep, then apply):
+  sed -i 's/yourusername/your-org-name/g' *.md docs/**/*.md
   ```
 
 - [ ] **Legal and Compliance**
@@ -117,19 +116,19 @@
 
 ## Architecture Deployment Benefits
 
-### 🎯 **Immediate Security Wins**
+### Immediate Security Wins
 - **Eliminate credential exposure risk** across all development workflows
 - **Implement hardware-backed authentication** without disrupting productivity
 - **Deploy comprehensive audit trails** for compliance requirements
 - **Enable secure multi-environment workflows** for development teams
 
-### 📈 **Long-term Organizational Benefits**
+### Long-term Organizational Benefits
 - **Standardized security practices** across development teams
 - **Reduced security incident risk** through prevention-first architecture
 - **Improved compliance posture** with built-in audit capabilities
 - **Developer productivity maintenance** while enhancing security
 
-### 🔄 **Ongoing Security Operations**
+### Ongoing Security Operations
 - **Automated security validation** through built-in health checks
 - **Systematic credential rotation** procedures
 - **Incident response integration** with existing security operations
@@ -139,7 +138,7 @@
 
 ## Deployment Validation
 
-### 🧪 **System Testing**
+### System Testing
 ```bash
 # Validate core security architecture
 ./validate.sh
@@ -151,7 +150,7 @@
 dotfiles_status && aws_check
 ```
 
-### 🏢 **Organizational Readiness**
+### Organizational Readiness
 - [ ] **Security Team Buy-in**: Security team understands and approves architecture
 - [ ] **Developer Training**: Team trained on secure credential workflows
 - [ ] **Incident Response**: Procedures established for credential incidents
@@ -161,7 +160,7 @@ dotfiles_status && aws_check
 
 ## Architecture Maintenance
 
-### 🔐 **Security Operations**
+### Security Operations
 **Monthly:**
 - Review credential rotation compliance
 - Audit access logs and unusual activity
@@ -172,7 +171,7 @@ dotfiles_status && aws_check
 - Review and update threat model
 - Validate backup and recovery procedures
 
-### 🛠️ **System Operations**
+### System Operations
 **As Needed:**
 - Deploy security updates to development teams
 - Update organizational configurations
@@ -182,24 +181,24 @@ dotfiles_status && aws_check
 
 ## Support & Resources
 
-### 🎯 **Deployment Success Metrics**
+### Deployment Success Metrics
 - [ ] Zero plaintext credentials in development environments
 - [ ] 100% team adoption of hardware security keys (where applicable)
 - [ ] Comprehensive audit trail coverage
 - [ ] < 10 second credential retrieval performance
 
-### 📚 **Architecture Documentation**
+### Architecture Documentation
 - **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Complete technical architecture
 - **[SECURITY.md](SECURITY.md)** - Security model and vulnerability process
 - **[USER-GUIDE.md](docs/USER-GUIDE.md)** - Complete user reference
 
-### 🆘 **Deployment Support**
+### Deployment Support
 - **Architecture Questions**: Review technical documentation
 - **Security Concerns**: Contact your security team lead
 - **Implementation Issues**: Test with provided validation scripts
 
 ---
 
-**🏆 Success Outcome**: Your organization deploys SecureDots - a professional local environment configuration system with documentation that meets enterprise security standards.
+**Success Outcome**: Your organization deploys SecureDots - a professional local environment configuration system with documentation that meets enterprise security standards.
 
 *SecureDots architecture balances enterprise security requirements with individual developer workflow flexibility.*

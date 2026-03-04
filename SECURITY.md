@@ -15,16 +15,13 @@
 
 </details>
 
-<!-- Main content landmark -->
-<a href="#our-commitment-to-security" class="sr-only">Skip to security information</a>
-
 ## Our Commitment to Security
 
 We take the security of SecureDots seriously. This local environment configuration system is designed with **enterprise-grade security architecture** that prioritizes credential protection and follows defense-in-depth principles. However, like all software, vulnerabilities may be discovered that require attention.
 
 ## Reporting Security Vulnerabilities
 
-### 🔒 For Security Issues (Potential Vulnerabilities)
+### For Security Issues (Potential Vulnerabilities)
 
 **Please DO NOT create public GitHub issues for security vulnerabilities.**
 
@@ -43,7 +40,7 @@ When reporting, please include:
 
 We aim to acknowledge security reports within 48 hours and provide regular updates on our progress.
 
-### 🐛 For Functional Issues (Bugs, Feature Requests)
+### For Functional Issues (Bugs, Feature Requests)
 
 For non-security related issues such as:
 - Installation problems
@@ -138,7 +135,7 @@ For general questions and community discussion, please use GitHub Issues or reac
 
 ---
 
-**Last Updated:** July 2025  
+**Last Updated:** March 2026  
 **Version:** 1.0
 
 *Thank you for helping keep our community secure! 🔒*
