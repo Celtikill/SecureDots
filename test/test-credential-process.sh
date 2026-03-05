@@ -133,10 +133,13 @@ test_debug_log_sanitizes_pass_paths() {
 
 test_error_output_formats_json() {
     local output
-    output=$(run_cred_func "
+    # Color vars are readonly after sourcing, so we override them before
+    output=$(bash -c "
+        export HOME='$TEST_HOME'
         RED='' YELLOW='' NC=''
+        $CRED_FUNCTIONS
         error_output 'test error' 'TestCode'
-    ")
+    " 2>&1)
     # error_output exits, so we check the combined output
     # The JSON goes to stdout, the human message to stderr
     assert_contains "$output" '"Version"' "Should contain Version key"
@@ -197,8 +200,7 @@ test_get_credential_fails_after_max_retries() {
 
 test_get_session_token_returns_when_exists() {
     local output
-    output=$(bash -c "
-        eval \"\$(sed -n '1,/^case/{ /^case/d; p }' '$CRED_SCRIPT')\"
+    output=$(run_cred_func "
         pass() {
             case \"\$1\" in
                 show) echo 'FwoGZXIvYXdzEBYaDHqa0AP'; return 0 ;;
@@ -208,19 +210,18 @@ test_get_session_token_returns_when_exists() {
         pass_entry_exists() { return 0; }
         export -f pass pass_entry_exists
         get_session_token 'dev'
-    " 2>&1)
+    ")
     assert_not_empty "$output" "Should return session token"
 }
 
 test_get_session_token_empty_when_missing() {
     local output
-    output=$(bash -c "
+    output=$(run_cred_func "
         export DEBUG=false
-        eval \"\$(sed -n '1,/^case/{ /^case/d; p }' '$CRED_SCRIPT')\"
         pass_entry_exists() { return 1; }
         export -f pass_entry_exists
         get_session_token 'dev'
-    " 2>&1)
+    ")
     assert_equals "" "$output" "Should return empty when no session token"
 }
 
@@ -228,15 +229,15 @@ test_get_session_token_empty_when_missing() {
 
 test_check_expiration_passes_future_date() {
     # Future date should not trigger error
+    # IMPORTANT: Use UTC since the Z suffix means UTC in ISO 8601
     local future
-    future=$(date -d "+1 hour" "+%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
-        || date -v+1H "+%Y-%m-%dT%H:%M:%SZ" 2>/dev/null)
+    future=$(date -u -d "+1 hour" "+%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
+        || date -u -v+1H "+%Y-%m-%dT%H:%M:%SZ" 2>/dev/null)
     if [[ -z "$future" ]]; then
         skip_test "check_expiration future date" "Cannot generate future date on this platform"
         return 0
     fi
-    bash -c "
-        eval \"\$(sed -n '1,/^case/{ /^case/d; p }' '$CRED_SCRIPT')\"
+    run_cred_func "
         pass_entry_exists() { return 0; }
         get_credential() { echo '$future'; }
         export -f pass_entry_exists get_credential
@@ -247,8 +248,7 @@ test_check_expiration_passes_future_date() {
 }
 
 test_check_expiration_fails_past_date() {
-    bash -c "
-        eval \"\$(sed -n '1,/^case/{ /^case/d; p }' '$CRED_SCRIPT')\"
+    run_cred_func "
         pass_entry_exists() { return 0; }
         get_credential() { echo '2020-01-01T00:00:00Z'; }
         export -f pass_entry_exists get_credential
