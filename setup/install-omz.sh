@@ -60,14 +60,45 @@ print_success "Prerequisites check passed"
 # Download and install Oh My Zsh
 print_info "Downloading and installing Oh My Zsh..."
 
-# Use the official installer with unattended mode
-if ! RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"; then
-    print_error "Failed to install Oh My Zsh"
-    echo "Recovery suggestions:"
-    echo "  1. Check your internet connection"
-    echo "  2. Try running the installer manually"
-    echo "  3. Check if GitHub is accessible"
-    echo "  4. Verify you have write permissions to your home directory"
+# Pin to specific commit for supply chain security (see ADR-001)
+omz_commit="b52dd1a425e9ed9f844ba46cd27ff94a3b4949dc"
+omz_sha256="ce0b7c94aa04d8c7a8137e45fe5c4744e3947871f785fd58117c480c1bf49352"
+omz_url="https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/${omz_commit}/tools/install.sh"
+omz_tmp="$(mktemp)"
+
+if curl -fsSL "$omz_url" -o "$omz_tmp"; then
+    # Cross-platform SHA-256 verification
+    actual_sha256=""
+    if command -v sha256sum &>/dev/null; then
+        actual_sha256="$(sha256sum "$omz_tmp" | awk '{print $1}')"
+    elif command -v shasum &>/dev/null; then
+        actual_sha256="$(shasum -a 256 "$omz_tmp" | awk '{print $1}')"
+    else
+        print_warning "No SHA-256 tool available, skipping checksum verification"
+    fi
+
+    if [[ -n "$actual_sha256" && "$actual_sha256" != "$omz_sha256" ]]; then
+        print_error "Oh My Zsh installer checksum mismatch!"
+        print_error "Expected: $omz_sha256"
+        print_error "Actual:   $actual_sha256"
+        rm -f "$omz_tmp"
+        exit 1
+    fi
+
+    if ! RUNZSH=no CHSH=no sh "$omz_tmp"; then
+        print_error "Failed to install Oh My Zsh"
+        echo "Recovery suggestions:"
+        echo "  1. Check your internet connection"
+        echo "  2. Try running the installer manually"
+        echo "  3. Check if GitHub is accessible"
+        echo "  4. Verify you have write permissions to your home directory"
+        rm -f "$omz_tmp"
+        exit 1
+    fi
+    rm -f "$omz_tmp"
+else
+    rm -f "$omz_tmp"
+    print_error "Failed to download Oh My Zsh installer"
     exit 1
 fi
 
