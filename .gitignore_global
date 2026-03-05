@@ -31,3 +31,34 @@ Thumbs.db
 *.tmp
 *.bak
 *.backup
+
+# SSH keys
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.pem
+*.key
+
+# Kubernetes
+.kube/config
+
+# Terraform/OpenTofu state
+*.tfstate
+*.tfstate.*
+.terraform/
+.tofu/
+
+# Package manager credentials
+.npmrc
+.pypirc
+.docker/config.json
+
+# Java keystores
+*.jks
+*.keystore
+
+# Shell history
+.bash_history
+.zsh_history
+.python_history
