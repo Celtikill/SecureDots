@@ -58,7 +58,9 @@ test_aws_functionality() {
     
     # Source shell configuration to get functions
     if [[ -f .zshrc ]]; then
-        # Source minimal AWS functions for testing
+        # Source zsh modules in bash for basic availability checks.
+        # This intentionally sources zsh files in bash to verify that key
+        # functions are defined — it does not test full zsh functionality.
         if [[ -f .config/zsh/aws.zsh ]]; then
             source .config/zsh/aws.zsh 2>/dev/null || true
             

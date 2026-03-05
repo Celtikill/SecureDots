@@ -227,22 +227,32 @@ test_aws() {
 }
 
 # Progress indicator for long operations
+PROGRESS_PID=""
 show_progress() {
     local message="$1"
     local delay="${2:-0.5}"
-    local frames=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
-    
-    while true; do
-        for frame in "${frames[@]}"; do
-            echo -ne "\r${INFO_BLUE}${frame}${RESET_COLOR} $message"
-            sleep "$delay"
+    local frames=(". " ".. " "...")
+
+    (
+        while true; do
+            for frame in "${frames[@]}"; do
+                echo -ne "\r${INFO_BLUE}${frame}${RESET_COLOR} $message"
+                sleep "$delay"
+            done
         done
-    done
+    ) &
+    PROGRESS_PID=$!
+    trap 'kill $PROGRESS_PID 2>/dev/null; wait $PROGRESS_PID 2>/dev/null' EXIT
 }
 
 # Stop progress indicator
 stop_progress() {
-    kill $! 2>/dev/null
+    if [[ -n "$PROGRESS_PID" ]]; then
+        kill "$PROGRESS_PID" 2>/dev/null
+        wait "$PROGRESS_PID" 2>/dev/null
+        PROGRESS_PID=""
+        trap - EXIT
+    fi
     echo -ne "\r"
 }
 
