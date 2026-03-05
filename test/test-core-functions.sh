@@ -169,7 +169,7 @@ test_penv_rejects_path_traversal() {
     output=$(run_zsh_mod "functions.zsh" 'penv "../etc/passwd"')
     local rc=$?
     assert_not_equals "0" "$rc" "Should reject path traversal"
-    assert_contains "$output" "Path traversal not allowed" "Should report traversal blocked"
+    assert_contains "$output" "Invalid pass path" "Should report invalid path"
 }
 
 test_penv_rejects_special_chars() {
