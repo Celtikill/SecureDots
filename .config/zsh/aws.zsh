@@ -27,7 +27,7 @@ fi
 
 # Utility functions
 aws_profile() {
-    [[ -n "$1" ]] && export AWS_PROFILE="$1" || echo "$AWS_PROFILE"
+    if [[ -n "$1" ]]; then aws_switch "$1"; else echo "$AWS_PROFILE"; fi
 }
 
 aws_check() {
