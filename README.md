@@ -164,6 +164,7 @@ To customize AWS profiles, edit `.config/securedots/aws-profiles.conf`.
 - **[GPG Management](docs/guides/gpg-mgmnt.md)** - Key lifecycle and hardware tokens
 - **[Pass Setup](docs/guides/pass-setup.md)** - Password store configuration
 - **[Security Policy](SECURITY.md)** - Vulnerability reporting and security model
+- **[Testing](test/README.md)** - Test suite reference for contributors
 
 ## License
 
