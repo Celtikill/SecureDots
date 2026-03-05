@@ -108,11 +108,10 @@ if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         print_info "Installing Oh My Zsh..."
-        # Pin to specific commit for supply chain security (2025-11-20)
-        local omz_commit="b52dd1a425e9ed9f844ba46cd27ff94a3b4949dc"
-        local omz_sha256="ce0b7c94aa04d8c7a8137e45fe5c4744e3947871f785fd58117c480c1bf49352"
-        local omz_url="https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/${omz_commit}/tools/install.sh"
-        local omz_tmp
+        # Pin to specific commit for supply chain security (2025-11-20, see ADR-001)
+        omz_commit="b52dd1a425e9ed9f844ba46cd27ff94a3b4949dc"
+        omz_sha256="ce0b7c94aa04d8c7a8137e45fe5c4744e3947871f785fd58117c480c1bf49352"
+        omz_url="https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/${omz_commit}/tools/install.sh"
         omz_tmp="$(mktemp)"
 
         if ! curl -fsSL "$omz_url" -o "$omz_tmp"; then
@@ -122,7 +121,7 @@ if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
         fi
 
         # Cross-platform SHA-256 verification
-        local actual_sha256=""
+        actual_sha256=""
         if command -v sha256sum &>/dev/null; then
             actual_sha256="$(sha256sum "$omz_tmp" | awk '{print $1}')"
         elif command -v shasum &>/dev/null; then
