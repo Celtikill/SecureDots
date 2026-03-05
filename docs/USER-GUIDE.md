@@ -83,7 +83,7 @@ Core modules always load. Optional modules are enabled by setting environment va
 ```bash
 # In ~/.zshrc.local:
 export ENABLE_CONDA=true      # Conda environment management
-export ENABLE_GEMINI=true     # Gemini AI integration
+export ENABLE_GEMINI_CODE_ASSIST=1  # Gemini AI integration
 export ENABLE_GPG=true        # GPG agent management
 export ENABLE_GPG_AUTH=true   # GPG-based SSH authentication
 ```
@@ -101,7 +101,7 @@ Reload with `source ~/.zshrc`.
 - Lazy-loads conda to avoid slowing shell startup
 - Activates conda environments on demand
 
-**Gemini** (`ENABLE_GEMINI=true`)
+**Gemini** (`ENABLE_GEMINI_CODE_ASSIST=1`)
 - `gemini_check` - Verify Gemini credentials
 - `gemini_status` - Show credential status (masked)
 - `gemini_clear` - Clear Gemini credentials

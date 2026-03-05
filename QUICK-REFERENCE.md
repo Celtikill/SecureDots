@@ -49,7 +49,7 @@ pass show aws/dev/access-key-id   # View stored credential
 
 ### Gemini AI (Optional)
 
-Requires `ENABLE_GEMINI=true` in `~/.zshrc.local`.
+Requires `ENABLE_GEMINI_CODE_ASSIST=1` in `~/.zshrc.local`.
 
 ```bash
 gemini_check               # Verify credentials are set
