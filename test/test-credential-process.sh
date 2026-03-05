@@ -133,11 +133,10 @@ test_debug_log_sanitizes_pass_paths() {
 
 test_error_output_formats_json() {
     local output
-    output=$(bash -c "
+    output=$(run_cred_func "
         RED='' YELLOW='' NC=''
-        eval \"\$(sed -n '1,/^case/{ /^case/d; p }' '$CRED_SCRIPT')\"
         error_output 'test error' 'TestCode'
-    " 2>&1)
+    ")
     # error_output exits, so we check the combined output
     # The JSON goes to stdout, the human message to stderr
     assert_contains "$output" '"Version"' "Should contain Version key"
@@ -149,13 +148,11 @@ test_error_output_formats_json() {
 
 test_get_credential_succeeds_first_try() {
     local output
-    output=$(bash -c "
-        eval \"\$(sed -n '1,/^case/{ /^case/d; p }' '$CRED_SCRIPT')\"
-        # Mock pass to succeed immediately
+    output=$(run_cred_func "
         pass() { echo 'AKIAIOSFODNN7EXAMPLE'; return 0; }
         export -f pass
         get_credential 'aws/dev/access-key-id'
-    " 2>&1)
+    ")
     assert_contains "$output" "AKIAIOSFODNN7EXAMPLE" "Should return credential on first try"
 }
 
@@ -164,8 +161,9 @@ test_get_credential_retries_then_succeeds() {
     echo "0" > "$attempt_file"
     local output
     output=$(bash -c "
+        export HOME='$TEST_HOME'
         export DEBUG=false
-        eval \"\$(sed -n '1,/^case/{ /^case/d; p }' '$CRED_SCRIPT')\"
+        $CRED_FUNCTIONS
         # Mock pass to fail twice then succeed using a file counter
         pass() {
             local a=\$(cat '$attempt_file')
@@ -185,10 +183,8 @@ test_get_credential_retries_then_succeeds() {
 }
 
 test_get_credential_fails_after_max_retries() {
-    bash -c "
+    run_cred_func "
         export DEBUG=false
-        eval \"\$(sed -n '1,/^case/{ /^case/d; p }' '$CRED_SCRIPT')\"
-        # Mock pass to always fail
         pass() { return 1; }
         export -f pass
         get_credential 'aws/dev/access-key-id'
