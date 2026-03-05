@@ -5,6 +5,10 @@
 
 set -euo pipefail
 
+# Resolve script and dotfiles directories for reliable path references
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -65,9 +69,9 @@ handle_error() {
     echo "  • See: docs/guides/TROUBLESHOOTING.md"
 }
 
-# Check if we're in the dotfiles directory
-if [[ ! -f "$(pwd)/setup/setup-simple.sh" ]] && [[ ! -f "setup-simple.sh" ]]; then
-    print_error "This script must be run from the dotfiles directory (found $(pwd))"
+# Validate dotfiles directory using sentinel file
+if [[ ! -f "$DOTFILES_DIR/.zshrc" ]]; then
+    print_error "Cannot locate dotfiles directory (expected .zshrc in $DOTFILES_DIR)"
     exit 1
 fi
 
@@ -107,7 +111,7 @@ print_success "All required tools are available"
 
 show_progress "Installing Oh My Zsh framework"
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-    if ! ./setup/install-omz.sh; then
+    if ! "$SCRIPT_DIR/install-omz.sh"; then
         handle_error "config_error" "Failed to install Oh My Zsh"
         exit 1
     fi
@@ -117,7 +121,7 @@ else
 fi
 
 show_progress "Installing Pure theme (minimal, fast prompt)"
-if ./setup/install-pure-theme.sh; then
+if "$SCRIPT_DIR/install-pure-theme.sh"; then
     print_success "Pure theme installed"
 else
     print_warning "Failed to install Pure theme, continuing..."
@@ -128,11 +132,36 @@ show_progress "Installing vim-plug for plugin management"
 VIM_PLUG_PATH="$HOME/.vim/autoload/plug.vim"
 if [[ ! -f "$VIM_PLUG_PATH" ]]; then
     mkdir -p "$HOME/.vim/autoload"
-    if curl -fLo "$VIM_PLUG_PATH" --create-dirs \
-        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim; then
-        print_success "vim-plug installed"
-        print_info "Run ':PlugInstall' in vim to install configured plugins"
+    # Pin to specific commit for supply chain security (2026-02-18, see ADR-001)
+    vimplug_commit="34467fc07d1bf1b3a6588e9d62711b9f7a8afda3"
+    vimplug_sha256="2eec4e7e8b14e11a47993cf97ae3bdac68b5f3a7de97c081417cce3f16432bb1"
+    vimplug_url="https://raw.githubusercontent.com/junegunn/vim-plug/${vimplug_commit}/plug.vim"
+    vimplug_tmp="$(mktemp)"
+
+    if curl -fsSL "$vimplug_url" -o "$vimplug_tmp"; then
+        # Cross-platform SHA-256 verification
+        actual_sha256=""
+        if command -v sha256sum &>/dev/null; then
+            actual_sha256="$(sha256sum "$vimplug_tmp" | awk '{print $1}')"
+        elif command -v shasum &>/dev/null; then
+            actual_sha256="$(shasum -a 256 "$vimplug_tmp" | awk '{print $1}')"
+        else
+            print_warning "No SHA-256 tool available, skipping checksum verification"
+        fi
+
+        if [[ -n "$actual_sha256" && "$actual_sha256" != "$vimplug_sha256" ]]; then
+            print_error "vim-plug checksum mismatch!"
+            print_error "Expected: $vimplug_sha256"
+            print_error "Actual:   $actual_sha256"
+            rm -f "$vimplug_tmp"
+            print_warning "Failed to install vim-plug, vim plugins may not work"
+        else
+            mv "$vimplug_tmp" "$VIM_PLUG_PATH"
+            print_success "vim-plug installed"
+            print_info "Run ':PlugInstall' in vim to install configured plugins"
+        fi
     else
+        rm -f "$vimplug_tmp"
         print_warning "Failed to install vim-plug, vim plugins may not work"
     fi
 else
@@ -153,7 +182,7 @@ done
 print_success "Backup created at $BACKUP_DIR"
 
 show_progress "Creating configuration symlinks"
-if ! stow --ignore='.aws' --ignore='.gnupg' --ignore='pass-setup.md' --ignore='gpg-*.md' .; then
+if ! stow -d "$DOTFILES_DIR" --ignore='.aws' --ignore='.gnupg' --ignore='pass-setup.md' --ignore='gpg-*.md' .; then
     handle_error "stow_error" "Failed to create symlinks with stow"
     exit 1
 fi

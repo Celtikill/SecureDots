@@ -171,7 +171,7 @@ sha256sum /tmp/verify.sh
 | Dependency | Commit | Date | SHA-256 |
 |-----------|--------|------|---------|
 | Oh My Zsh install.sh | `b52dd1a4...` | 2025-11-20 | `ce0b7c94...` |
-| vim-plug plug.vim | TBD (Batch 2) | TBD | TBD |
+| vim-plug plug.vim | `34467fc0...` | 2026-02-18 | `2eec4e7e...` |
 
 ---
 
