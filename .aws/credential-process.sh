@@ -150,9 +150,16 @@ check_expiration() {
     local expiry_entry="${PASS_PREFIX}/${profile}/expiration"
     
     if pass_entry_exists "$expiry_entry"; then
-        local expiration=$(get_credential "$expiry_entry")
-        local now=$(date +%s)
-        local exp_timestamp=$(date -d "$expiration" +%s 2>/dev/null || echo "0")
+        local expiration
+        expiration=$(get_credential "$expiry_entry")
+        local now
+        now=$(date +%s)
+        # Cross-platform date parsing: GNU date (-d) then BSD date (-jf)
+        local exp_timestamp
+        exp_timestamp=$(date -d "$expiration" +%s 2>/dev/null) \
+            || exp_timestamp=$(date -jf "%Y-%m-%dT%H:%M:%SZ" "$expiration" +%s 2>/dev/null) \
+            || exp_timestamp=$(date -jf "%Y-%m-%dT%H:%M:%S" "$expiration" +%s 2>/dev/null) \
+            || exp_timestamp="0"
         
         if [[ $exp_timestamp -gt 0 ]] && [[ $now -gt $exp_timestamp ]]; then
             error_output "Credentials for profile '$profile' have expired" "ExpiredCredentialsError"
@@ -274,7 +281,8 @@ main() {
     fi
     
     # Check for session token (for temporary credentials)
-    local session_token=$(get_session_token "$profile")
+    local session_token
+    session_token=$(get_session_token "$profile")
 
     # Build JSON output using jq for safe escaping (prevents JSON injection)
     local json_output=""

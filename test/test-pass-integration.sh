@@ -2,15 +2,15 @@
 # Test Pass Integration
 # Comprehensive testing for pass password store and AWS credential integration
 
-# Disable strict error checking for tests
-set +euo pipefail
-
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Source test framework
 source "$SCRIPT_DIR/test-framework.sh"
+
+# Disable strict error checking for tests (after framework sets -euo pipefail)
+set +euo pipefail
 
 # Setup and teardown for pass tests
 setup() {
