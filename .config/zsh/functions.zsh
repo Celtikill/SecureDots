@@ -302,9 +302,8 @@ dotfiles_functions() {
     echo "  aws_check           - Check AWS credentials"
     echo "  aws_switch <profile> - Switch AWS profile"
     echo
-    echo "GPG Functions (if configured):"
-    echo "  gpg_card_status     - Check GPG card status"
-    echo "  mount_gpg_vault     - Mount GPG vault"
+    echo "GPG Functions:"
+    echo "  (GPG functions loaded when gpg module is enabled)"
     echo
     echo "Gemini Functions (if ENABLE_GEMINI_CODE_ASSIST=1):"
     echo "  gemini_check        - Verify credentials and ADC file"
@@ -450,7 +449,17 @@ penv() {
         echo "Current loaded path: ${PENV_LOADED_PATH:-None}"
         return 0
     fi
-    
+
+    # Input validation: restrict to safe characters and prevent path traversal
+    if [[ ! "$pass_path" =~ ^[a-zA-Z0-9/_-]{1,128}$ ]]; then
+        echo "Error: Invalid pass path format" >&2
+        return 1
+    fi
+    if [[ "$pass_path" =~ \.\. ]] || [[ "$pass_path" =~ ^[./] ]]; then
+        echo "Error: Path traversal not allowed" >&2
+        return 1
+    fi
+
     # Check if pass entry exists
     if ! pass ls "$pass_path" &>/dev/null; then
         echo "❌ Pass entry not found: $pass_path" >&2
@@ -480,9 +489,11 @@ penv() {
             echo "✓ AWS_SESSION_TOKEN loaded from $session_token_path"
         fi
         
-        # Store the loaded path for easy clearing
+        # Store the loaded path and timestamp for tracking
         export PENV_LOADED_PATH="$pass_path"
+        export PENV_LOADED_AT=$(date +%s)
         echo "Environment variables loaded from pass:$pass_path"
+        echo "WARNING: Credentials persist in this shell session. Run 'penv_clear' when done." >&2
     else
         echo "Generic pass entry loading not yet implemented for: $pass_path" >&2
         return 1
@@ -501,9 +512,15 @@ penv_clear() {
     done
     
     if [[ -n "$PENV_LOADED_PATH" ]]; then
-        echo "Cleared environment variables from pass:$PENV_LOADED_PATH"
-        unset PENV_LOADED_PATH
+        if [[ -n "$PENV_LOADED_AT" ]]; then
+            local now=$(date +%s)
+            local duration=$(( now - PENV_LOADED_AT ))
+            echo "Cleared environment variables from pass:$PENV_LOADED_PATH (active ${duration}s)"
+        else
+            echo "Cleared environment variables from pass:$PENV_LOADED_PATH"
+        fi
+        unset PENV_LOADED_PATH PENV_LOADED_AT
     fi
 }
 
-export GPG_TTY=$(tty)
+if [[ -t 0 ]]; then export GPG_TTY=$(tty); fi

@@ -30,8 +30,13 @@ if command -v docker &>/dev/null; then
     alias dex='docker exec -it'
 fi
 
-# Terraform/OpenTofu (conditional)
-if command -v terraform &>/dev/null || command -v tofu &>/dev/null; then
+# Terraform/OpenTofu (conditional, prefer tofu per infrastructure.md)
+if command -v tofu &>/dev/null; then
+    alias tf='tofu'
+    alias tfi='tofu init'
+    alias tfp='tofu plan'
+    alias tfa='tofu apply'
+elif command -v terraform &>/dev/null; then
     alias tf='terraform'
     alias tfi='terraform init'
     alias tfp='terraform plan'
