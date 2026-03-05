@@ -108,9 +108,9 @@ if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         print_info "Installing Oh My Zsh..."
-        # Pin to specific commit for supply chain security
-        local omz_commit="c52e646bb7b91a5b6885e64d1e9388e78b65e345"
-        local omz_sha256="4e1a43e4e774c35a744e0e20e4af8b8f66a9e69e8c5f1e9c3a7b2d6f8e0a1c3b"
+        # Pin to specific commit for supply chain security (2025-11-20)
+        local omz_commit="b52dd1a425e9ed9f844ba46cd27ff94a3b4949dc"
+        local omz_sha256="ce0b7c94aa04d8c7a8137e45fe5c4744e3947871f785fd58117c480c1bf49352"
         local omz_url="https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/${omz_commit}/tools/install.sh"
         local omz_tmp
         omz_tmp="$(mktemp)"
