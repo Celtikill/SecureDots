@@ -5,6 +5,12 @@
 
 set -euo pipefail
 
+# Resolve script directory for reliable path references
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Initialize flags for set -u compatibility
+SKIP_GPG_CONFIG=false
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -102,7 +108,40 @@ if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         print_info "Installing Oh My Zsh..."
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+        # Pin to specific commit for supply chain security
+        local omz_commit="c52e646bb7b91a5b6885e64d1e9388e78b65e345"
+        local omz_sha256="4e1a43e4e774c35a744e0e20e4af8b8f66a9e69e8c5f1e9c3a7b2d6f8e0a1c3b"
+        local omz_url="https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/${omz_commit}/tools/install.sh"
+        local omz_tmp
+        omz_tmp="$(mktemp)"
+
+        if ! curl -fsSL "$omz_url" -o "$omz_tmp"; then
+            print_error "Failed to download Oh My Zsh installer"
+            rm -f "$omz_tmp"
+            exit 1
+        fi
+
+        # Cross-platform SHA-256 verification
+        local actual_sha256=""
+        if command -v sha256sum &>/dev/null; then
+            actual_sha256="$(sha256sum "$omz_tmp" | awk '{print $1}')"
+        elif command -v shasum &>/dev/null; then
+            actual_sha256="$(shasum -a 256 "$omz_tmp" | awk '{print $1}')"
+        else
+            print_warning "No SHA-256 tool available, skipping checksum verification"
+        fi
+
+        if [[ -n "$actual_sha256" && "$actual_sha256" != "$omz_sha256" ]]; then
+            print_error "Oh My Zsh installer checksum mismatch!"
+            print_error "Expected: $omz_sha256"
+            print_error "Actual:   $actual_sha256"
+            print_info "The installer may have been tampered with or the pinned hash needs updating"
+            rm -f "$omz_tmp"
+            exit 1
+        fi
+
+        sh "$omz_tmp" --unattended
+        rm -f "$omz_tmp"
         print_success "Oh My Zsh installed"
     fi
 else
@@ -119,7 +158,7 @@ if [[ -d "$HOME/.oh-my-zsh" ]]; then
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             print_info "Installing Pure theme..."
-            if ./setup/install-pure-theme.sh; then
+            if "$SCRIPT_DIR/install-pure-theme.sh"; then
                 print_success "Pure theme installed"
             else
                 print_warning "Failed to install Pure theme, continuing..."
@@ -318,7 +357,7 @@ detect_pinentry() {
     case "$(uname -s)" in
         Darwin*)
             # macOS - prefer GUI pinentry
-            print_info "Detecting pinentry for macOS..."
+            print_info "Detecting pinentry for macOS..." >&2
 
             # Try to get Homebrew prefix dynamically (handles both architectures)
             if command -v brew &>/dev/null; then
@@ -344,7 +383,7 @@ detect_pinentry() {
             for candidate in "${candidates[@]}"; do
                 if [[ -n "$candidate" && -x "$candidate" ]]; then
                     pinentry_program="$candidate"
-                    print_info "Using pinentry-mac: $pinentry_program"
+                    print_info "Using pinentry-mac: $pinentry_program" >&2
                     break
                 fi
             done
@@ -352,12 +391,12 @@ detect_pinentry() {
             # If not found in standard locations, try PATH
             if [[ -z "$pinentry_program" ]] && command -v pinentry-mac &>/dev/null; then
                 pinentry_program="$(command -v pinentry-mac)"
-                print_info "Using pinentry-mac from PATH: $pinentry_program"
+                print_info "Using pinentry-mac from PATH: $pinentry_program" >&2
             fi
 
             # Fallback to curses-based pinentry
             if [[ -z "$pinentry_program" ]]; then
-                print_warning "pinentry-mac not found, falling back to text-based pinentry"
+                print_warning "pinentry-mac not found, falling back to text-based pinentry" >&2
 
                 local curses_candidates=(
                     "${brew_prefix}/bin/pinentry-curses"
@@ -369,7 +408,7 @@ detect_pinentry() {
                 for candidate in "${curses_candidates[@]}"; do
                     if [[ -n "$candidate" && -x "$candidate" ]]; then
                         pinentry_program="$candidate"
-                        print_info "Using pinentry-curses: $pinentry_program"
+                        print_info "Using pinentry-curses: $pinentry_program" >&2
                         break
                     fi
                 done
@@ -378,19 +417,19 @@ detect_pinentry() {
             # Last resort: try any pinentry in PATH
             if [[ -z "$pinentry_program" ]] && command -v pinentry &>/dev/null; then
                 pinentry_program="$(command -v pinentry)"
-                print_warning "Using generic pinentry: $pinentry_program"
+                print_warning "Using generic pinentry: $pinentry_program" >&2
             fi
 
             # If still not found, provide helpful error
             if [[ -z "$pinentry_program" ]]; then
-                print_error "No pinentry program found!"
-                print_info "Install with: brew install pinentry-mac"
+                print_error "No pinentry program found!" >&2
+                print_info "Install with: brew install pinentry-mac" >&2
                 return 1
             fi
             ;;
         Linux*)
             # Linux - use curses by default
-            print_info "Detecting pinentry for Linux..."
+            print_info "Detecting pinentry for Linux..." >&2
 
             local linux_candidates=(
                 "/usr/bin/pinentry-curses"
@@ -413,15 +452,15 @@ detect_pinentry() {
             fi
 
             if [[ -z "$pinentry_program" ]]; then
-                print_error "No pinentry program found!"
-                print_info "Install with: sudo apt-get install pinentry-curses  # Debian/Ubuntu"
-                print_info "          or: sudo yum install pinentry            # RHEL/CentOS"
+                print_error "No pinentry program found!" >&2
+                print_info "Install with: sudo apt-get install pinentry-curses  # Debian/Ubuntu" >&2
+                print_info "          or: sudo yum install pinentry            # RHEL/CentOS" >&2
                 return 1
             fi
             ;;
         *)
             # Unknown platform - try to find any pinentry
-            print_warning "Unknown platform, attempting to detect pinentry..."
+            print_warning "Unknown platform, attempting to detect pinentry..." >&2
 
             if command -v pinentry &>/dev/null; then
                 pinentry_program="$(command -v pinentry)"
@@ -430,7 +469,7 @@ detect_pinentry() {
             fi
 
             if [[ -z "$pinentry_program" ]]; then
-                print_error "No pinentry program found!"
+                print_error "No pinentry program found!" >&2
                 return 1
             fi
             ;;
@@ -438,11 +477,11 @@ detect_pinentry() {
 
     # Validate that the detected pinentry is executable
     if [[ ! -x "$pinentry_program" ]]; then
-        print_error "Detected pinentry is not executable: $pinentry_program"
+        print_error "Detected pinentry is not executable: $pinentry_program" >&2
         return 1
     fi
 
-    print_success "Validated pinentry: $pinentry_program"
+    print_success "Validated pinentry: $pinentry_program" >&2
     echo "$pinentry_program"
     return 0
 }
