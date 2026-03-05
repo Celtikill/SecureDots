@@ -101,7 +101,7 @@ EOF
     # Security Layer 2: Injection prevention
     # Blocks path traversal (../) and shell metacharacters that could enable command injection
     # This prevents malicious profile names from executing arbitrary commands
-    if [[ "$target_profile" =~ \.\. ]] || [[ "$target_profile" =~ ^[./] ]] || [[ "$target_profile" =~ /$ ]] || [[ "$target_profile" =~ [\;\&\|\`\$] ]]; then
+    if [[ "$target_profile" == *..* ]] || [[ "$target_profile" == .* ]] || [[ "$target_profile" == /* ]] || [[ "$target_profile" == */ ]] || [[ "$target_profile" == *[\;\&\|\`\$]* ]]; then
         echo "Error: Profile name contains invalid characters"
         return 1
     fi

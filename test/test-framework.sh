@@ -508,6 +508,104 @@ assert_no_credential_exposure() {
     return 0
 }
 
+# ===== Zsh Function Testing Helper =====
+# Run a zsh function from a source file in an isolated zsh subprocess
+# Usage: run_zsh_function <source_file> <function_call> [setup_code]
+run_zsh_function() {
+    local source_file="$1"
+    local function_call="$2"
+    local setup_code="${3:-}"
+    zsh -c "${setup_code:+$setup_code; }source '${source_file}'; ${function_call}" 2>&1
+}
+
+# ===== Additional Assertions =====
+
+# Assert exit code matches expected value
+assert_exit_code() {
+    local expected="$1"
+    local actual="$2"
+    local message="${3:-Exit code should match expected}"
+
+    if [[ "$expected" == "$actual" ]]; then
+        return 0
+    else
+        echo "  Expected exit code: $expected"
+        echo "  Actual exit code:   $actual"
+        return 1
+    fi
+}
+
+# Assert value is not empty
+assert_not_empty() {
+    local value="$1"
+    local message="${2:-Value should not be empty}"
+
+    if [[ -n "$value" ]]; then
+        return 0
+    else
+        echo "  Value is empty"
+        return 1
+    fi
+}
+
+# ===== Consolidated Mock Helpers =====
+
+# Mock AWS CLI - simulates aws sts get-caller-identity
+mock_aws_cli() {
+    local mode="${1:-success}"
+
+    aws() {
+        case "${1:-}" in
+            sts)
+                if [[ "${MOCK_AWS_MODE:-success}" == "success" ]]; then
+                    echo '{"UserId":"AIDAEXAMPLE","Account":"123456789012","Arn":"arn:aws:iam::123456789012:user/test"}'
+                    return 0
+                else
+                    echo "An error occurred (ExpiredToken)" >&2
+                    return 255
+                fi
+                ;;
+            *)
+                return 0
+                ;;
+        esac
+    }
+    export MOCK_AWS_MODE="$mode"
+    export -f aws
+}
+
+# Mock pass command for testing (consolidated from test-pass-integration.sh pattern)
+mock_pass_command() {
+    pass() {
+        local command="$1"
+        shift
+        local args="$*"
+
+        case "$command" in
+            "ls")
+                if [[ "$args" == *"nonexistent"* ]]; then
+                    return 1
+                fi
+                echo "Password Store"
+                return 0
+                ;;
+            "show")
+                case "$args" in
+                    *"access-key-id") echo "AKIAIOSFODNN7EXAMPLE"; return 0 ;;
+                    *"secret-access-key") echo "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"; return 0 ;;
+                    *"session-token") echo "FwoGZXIvYXdzEBYaDHqa0AP"; return 0 ;;
+                    *".gpg-id") echo "ABCDEF1234567890"; return 0 ;;
+                    *) echo "Error: $args is not in the password store."; return 1 ;;
+                esac
+                ;;
+            *)
+                return 1
+                ;;
+        esac
+    }
+    export -f pass
+}
+
 # Export all functions for use in test files
 export -f assert_equals
 export -f assert_not_equals
@@ -540,3 +638,8 @@ export -f print_success
 export -f print_error
 export -f print_warning
 export -f print_info
+export -f run_zsh_function
+export -f assert_exit_code
+export -f assert_not_empty
+export -f mock_aws_cli
+export -f mock_pass_command
