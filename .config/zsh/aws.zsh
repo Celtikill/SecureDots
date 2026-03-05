@@ -45,6 +45,15 @@ aws_switch() {
     # Load profiles from external config if it exists
     local profiles_config="${HOME}/.config/securedots/aws-profiles.conf"
     if [[ -f "$profiles_config" ]]; then
+        # Permission check: warn and fix if config is world-readable
+        local perms=""
+        if command -v stat &>/dev/null; then
+            perms=$(stat -c %a "$profiles_config" 2>/dev/null || stat -f %Lp "$profiles_config" 2>/dev/null)
+        fi
+        if [[ -n "$perms" && "$perms" != "600" && "$perms" != "400" ]]; then
+            echo "Warning: $profiles_config has insecure permissions ($perms), fixing to 600" >&2
+            chmod 600 "$profiles_config"
+        fi
         # Read profiles from config file, ignoring comments and empty lines
         while IFS= read -r line; do
             # Skip comments and empty lines
@@ -70,6 +79,7 @@ dev
 staging
 # production  # Uncomment to enable production access
 EOF
+        chmod 600 "$profiles_config"
     fi
     
     # Show usage if no profile specified
