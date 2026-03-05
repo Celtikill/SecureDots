@@ -12,7 +12,7 @@ Email security issues to **celtikill@celtikill.io**. Include:
 
 We aim to acknowledge reports within 48 hours.
 
-For non-security bugs, use [GitHub Issues](https://github.com/yourusername/dotfiles/issues).
+For non-security bugs, use [GitHub Issues](https://github.com/Celtikill/dotfiles/issues).
 
 ### Disclosure Timeline
 

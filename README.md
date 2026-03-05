@@ -30,7 +30,7 @@ sudo pacman -S git stow zsh gnupg pass
 Clone and run setup:
 
 ```bash
-git clone https://github.com/yourusername/dotfiles.git ~/dotfiles
+git clone https://github.com/Celtikill/dotfiles.git ~/dotfiles
 cd ~/dotfiles && ./setup/setup-simple.sh
 source ~/.zshrc && dotfiles_help
 ```
@@ -55,7 +55,7 @@ The shell loads modules from `~/.config/zsh/`. Core modules always load; optiona
 | `functions.zsh` | Core | Utility functions (dotfiles_help, etc.) |
 | `aws.zsh` | Default | AWS profile management |
 | `conda.zsh` | Optional (`ENABLE_CONDA`) | Conda environments |
-| `gemini.zsh` | Optional (`ENABLE_GEMINI`) | Gemini AI integration |
+| `gemini.zsh` | Optional (`ENABLE_GEMINI_CODE_ASSIST`) | Gemini AI integration |
 | `gpg.zsh` | Optional (`ENABLE_GPG`) | GPG agent management |
 | `gpg-auth.zsh` | Optional (`ENABLE_GPG_AUTH`) | GPG-based SSH authentication |
 
@@ -148,13 +148,13 @@ alias myproject="cd ~/work/myproject"
 
 # Enable optional modules
 export ENABLE_CONDA=true
-export ENABLE_GEMINI=true
+export ENABLE_GEMINI_CODE_ASSIST=1
 
 # Custom environment variables
 export EDITOR=nvim
 ```
 
-To change AWS profiles, edit `.config/zsh/aws.zsh`.
+To customize AWS profiles, edit `.config/securedots/aws-profiles.conf`.
 
 ## Documentation
 
