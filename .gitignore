@@ -20,3 +20,21 @@
 dotfiles-*.tar.gz.gpg
 .vim/plugged/
 .vim/.netrwhist
+
+# SSH keys and certificates
+id_*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Environment files
+.env
+.env.*
+
+# Password store
+.password-store/
+
+# Gemini / GCP credentials
+.gemini/
+application_default_credentials.json
