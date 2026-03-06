@@ -69,8 +69,8 @@ assert_not_equals() {
 assert_true() {
     local condition="$1"
     local message="${2:-Condition should be true}"
-    
-    if eval "$condition"; then
+
+    if bash -c "$condition"; then
         return 0
     else
         echo "  Condition failed: $condition"
@@ -81,8 +81,8 @@ assert_true() {
 assert_false() {
     local condition="$1"
     local message="${2:-Condition should be false}"
-    
-    if ! eval "$condition"; then
+
+    if ! bash -c "$condition"; then
         return 0
     else
         echo "  Condition succeeded when it should have failed: $condition"
@@ -318,19 +318,32 @@ assert_gpg_config() {
 # Performance measurement functions
 benchmark_start() {
     local test_name="$1"
-    echo "$test_name:$(date +%s.%N)" > "/tmp/benchmark_${test_name// /_}.start"
+    local bench_file
+    bench_file=$(mktemp "/tmp/benchmark_XXXXXX.start")
+    chmod 600 "$bench_file"
+    date +%s.%N > "$bench_file"
+    # Store path in a sanitized env var name
+    local var_name="_BENCH_FILE_${test_name// /_}"
+    var_name="${var_name//[^a-zA-Z0-9_]/_}"
+    export "$var_name=$bench_file"
 }
 
 benchmark_end() {
     local test_name="$1"
-    local start_file="/tmp/benchmark_${test_name// /_}.start"
-    
-    if [[ -f "$start_file" ]]; then
-        local start_time=$(cat "$start_file" | cut -d: -f2)
-        local end_time=$(date +%s.%N)
-        local duration=$(echo "$end_time - $start_time" | bc -l 2>/dev/null || echo "0")
+    local var_name="_BENCH_FILE_${test_name// /_}"
+    var_name="${var_name//[^a-zA-Z0-9_]/_}"
+    local bench_file="${!var_name}"
+
+    if [[ -n "${bench_file:-}" && -f "$bench_file" ]]; then
+        local start_time
+        start_time=$(cat "$bench_file")
+        local end_time
+        end_time=$(date +%s.%N)
+        local duration
+        duration=$(echo "$end_time - $start_time" | bc -l 2>/dev/null || echo "0")
         echo "  Duration: ${duration}s"
-        rm -f "$start_file"
+        rm -f "$bench_file"
+        unset "$var_name"
         return 0
     else
         echo "  No benchmark start found for: $test_name"
@@ -434,13 +447,17 @@ setup_test_environment() {
     export TEST_CONFIG_DIR="$TEST_HOME/.config"
     export TEST_GNUPG_DIR="$TEST_HOME/.gnupg"
     export TEST_AWS_DIR="$TEST_HOME/.aws"
-    
+
     mkdir -p "$TEST_HOME" "$TEST_CONFIG_DIR" "$TEST_GNUPG_DIR" "$TEST_AWS_DIR"
-    
+
+    # Save original HOME and GNUPGHOME before overriding
+    export _ORIG_HOME="${HOME}"
+    export _ORIG_GNUPGHOME="${GNUPGHOME:-}"
+
     # Set up minimal environment
     export HOME="$TEST_HOME"
     export GNUPGHOME="$TEST_GNUPG_DIR"
-    
+
     print_info "Test environment created: $TEST_ENV_DIR"
 }
 
@@ -449,7 +466,18 @@ cleanup_test_environment() {
         rm -rf "$TEST_ENV_DIR"
         print_info "Test environment cleaned up"
     fi
-    
+
+    # Restore original HOME and GNUPGHOME
+    if [[ -n "${_ORIG_HOME:-}" ]]; then
+        export HOME="${_ORIG_HOME}"
+    fi
+    if [[ -n "${_ORIG_GNUPGHOME:-}" ]]; then
+        export GNUPGHOME="${_ORIG_GNUPGHOME}"
+    else
+        unset GNUPGHOME 2>/dev/null || true
+    fi
+    unset _ORIG_HOME _ORIG_GNUPGHOME 2>/dev/null || true
+
     # Reset environment variables safely
     unset TEST_ENV_DIR TEST_HOME TEST_CONFIG_DIR TEST_GNUPG_DIR TEST_AWS_DIR 2>/dev/null || true
     unset MOCK_YUBIKEY_STATUS MOCK_GPG_CARD_STATUS MOCK_GPG_KEYS 2>/dev/null || true

@@ -253,10 +253,10 @@ EOF
     assert_contains "$(cat "$gitignore_global")" ".aws/credentials" "Should ignore AWS credentials"
     assert_contains "$(cat "$gitignore_global")" "*.key" "Should ignore key files"
     
-    # Simulate git config setting
-    # (In real test, this would set git config, but we just verify the intent)
-    local git_config_command="git config --global core.excludesfile ~/.gitignore_global"
-    assert_true "[[ -n '$git_config_command' ]]" "Should set git excludesfile config"
+    # Verify the gitignore file contains active (non-comment) patterns
+    local pattern_count
+    pattern_count=$(grep -c '^[^#]' "$gitignore_global" 2>/dev/null || echo "0")
+    assert_not_equals "0" "$pattern_count" "Global gitignore should contain active patterns"
 }
 
 test_platform_specific_setup() {
