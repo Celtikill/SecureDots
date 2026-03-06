@@ -93,41 +93,87 @@ mock_pass() {
     esac
 }
 
+# Helper: run penv tests in an isolated zsh subprocess with mock pass
+# Usage: run_penv_test <func_call> [extra_setup]
+run_penv_test() {
+    local func_call="$1"
+    local extra_setup="${2:-}"
+    zsh -c "
+        export HOME='$TEST_HOME'
+        export PASSWORD_STORE_DIR='$PASSWORD_STORE_DIR'
+        # Inline mock pass for the zsh subprocess
+        pass() {
+            local command=\"\$1\"
+            shift
+            local args=\"\$*\"
+            case \"\$command\" in
+                ls)
+                    if [[ \"\$args\" == \"aws/dev\" ]]; then
+                        echo \"aws/dev/access-key-id\"
+                        echo \"aws/dev/secret-access-key\"
+                        echo \"aws/dev/session-token\"
+                        return 0
+                    elif [[ \"\$args\" == \"aws/nonexistent\" ]]; then
+                        return 1
+                    else
+                        echo \"Password Store\"
+                        echo \"├── aws\"
+                        echo \"│   ├── dev\"
+                        echo \"│   ├── staging\"
+                        echo \"│   └── prod\"
+                        return 0
+                    fi
+                    ;;
+                show)
+                    case \"\$args\" in
+                        aws/dev/access-key-id) echo \"AKIAIOSFODNN7EXAMPLE\"; return 0 ;;
+                        aws/dev/secret-access-key) echo \"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"; return 0 ;;
+                        aws/dev/session-token) echo \"AQoDYXdzEJr...<base64 string>...=\"; return 0 ;;
+                        aws/staging/access-key-id) echo \"AKIAIOSFODNN7STAGING\"; return 0 ;;
+                        aws/staging/secret-access-key) echo \"wJalrXUtnFEMI/K7MDENG/bPxRfiCYSTAGING\"; return 0 ;;
+                        aws/staging/session-token) echo \"AQoDYXdzEJrSTAGINGTOKEN\"; return 0 ;;
+                        .gpg-id) echo \"1234567890ABCDEF1234567890ABCDEF12345678\"; return 0 ;;
+                        *) echo \"Error: \$args is not in the password store.\"; return 1 ;;
+                    esac
+                    ;;
+                init) echo \"Password store initialized for \$args\"; return 0 ;;
+                *) return 1 ;;
+            esac
+        }
+        ${extra_setup:+$extra_setup; }
+        source '$DOTFILES_DIR/.config/zsh/functions.zsh'
+        $func_call
+    " 2>&1
+}
+
 # Test penv function with mocked pass
 test_penv_function_loading() {
-    # Source the functions from functions.zsh
-    source "$DOTFILES_DIR/.config/zsh/functions.zsh"
-
-    # Override pass command with our mock
-    pass() { mock_pass "$@"; }
-
-    # Test loading AWS credentials - redirect output to capture messages
-    local output_file=$(mktemp)
-    penv aws/dev > "$output_file" 2>&1
+    local output
+    output=$(run_penv_test '
+        penv aws/dev
+        echo "AK=${AWS_ACCESS_KEY_ID:-}"
+        echo "SK=${AWS_SECRET_ACCESS_KEY:-}"
+        echo "ST=${AWS_SESSION_TOKEN:-}"
+        echo "LP=${PENV_LOADED_PATH:-}"
+    ')
     local exit_code=$?
-    local output=$(cat "$output_file")
-    rm -f "$output_file"
 
     assert_equals "0" "$exit_code" "penv should succeed with valid AWS path"
     assert_contains "$output" "AWS_ACCESS_KEY_ID loaded" "Should report loading access key"
     assert_contains "$output" "AWS_SECRET_ACCESS_KEY loaded" "Should report loading secret key"
     assert_contains "$output" "AWS_SESSION_TOKEN loaded" "Should report loading session token"
 
-    # Verify environment variables are set (in current shell context)
-    assert_equals "AKIAIOSFODNN7EXAMPLE" "${AWS_ACCESS_KEY_ID:-}" "Access key should be loaded"
-    assert_equals "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" "${AWS_SECRET_ACCESS_KEY:-}" "Secret key should be loaded"
-    assert_equals "AQoDYXdzEJr...<base64 string>...=" "${AWS_SESSION_TOKEN:-}" "Session token should be loaded"
-    assert_equals "aws/dev" "${PENV_LOADED_PATH:-}" "Should track loaded path"
+    # Verify environment variables were set inside the zsh subprocess
+    assert_contains "$output" "AK=AKIAIOSFODNN7EXAMPLE" "Access key should be loaded"
+    assert_contains "$output" "SK=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" "Secret key should be loaded"
+    assert_contains "$output" "ST=AQoDYXdzEJr...<base64 string>...=" "Session token should be loaded"
+    assert_contains "$output" "LP=aws/dev" "Should track loaded path"
 }
 
 test_penv_function_help() {
-    # Source the functions
-    source "$DOTFILES_DIR/.config/zsh/functions.zsh"
-    
-    # Test help output
     local help_output
-    help_output=$(penv --help 2>&1)
-    
+    help_output=$(run_penv_test 'penv --help')
+
     assert_contains "$help_output" "Pass Environment Loader" "Should show help header"
     assert_contains "$help_output" "Usage: penv <pass-path>" "Should show usage"
     assert_contains "$help_output" "penv aws/dev" "Should show AWS example"
@@ -135,26 +181,20 @@ test_penv_function_help() {
 }
 
 test_penv_function_error_handling() {
-    # Source the functions
-    source "$DOTFILES_DIR/.config/zsh/functions.zsh"
-    
-    # Override pass command with our mock
-    pass() { mock_pass "$@"; }
-    
     # Test with nonexistent path
     local error_output
-    error_output=$(penv aws/nonexistent 2>&1)
+    error_output=$(run_penv_test 'penv aws/nonexistent')
     local exit_code=$?
-    
+
     assert_equals "1" "$exit_code" "Should fail with nonexistent path"
     assert_contains "$error_output" "Pass entry not found" "Should report missing entry"
     assert_contains "$error_output" "Available entries" "Should show available entries"
-    
+
     # Test with empty parameter
     local empty_output
-    empty_output=$(penv "" 2>&1)
+    empty_output=$(run_penv_test 'penv ""')
     local empty_exit_code=$?
-    
+
     assert_equals "0" "$empty_exit_code" "Empty parameter should show help"
     assert_contains "$empty_output" "Usage: penv" "Should show help for empty parameter"
 }
@@ -237,32 +277,33 @@ test_pass_store_structure() {
     for path in "${expected_paths[@]}"; do
         local profile=$(echo "$path" | cut -d/ -f2)
         local credential=$(echo "$path" | cut -d/ -f3)
-        
-        # Test that pass can list the profile
-        assert_true "pass ls aws/$profile >/dev/null 2>&1" "Should be able to list $profile credentials"
+
+        # Test that pass can list the profile (direct call, not via assert_true,
+        # because mock pass() is a shell function unavailable in bash -c subprocess)
+        if ! pass ls "aws/$profile" >/dev/null 2>&1; then
+            echo "  Failed to list $profile credentials"
+            return 1
+        fi
     done
 }
 
 test_credential_security() {
     # Test that credentials are handled securely
-    
+
     # Mock a credential load
     local test_credential="AKIAIOSFODNN7EXAMPLE"
-    
+
     # Credentials should not be logged or exposed
     assert_no_credential_exposure "$test_credential" "Should not expose credential in test context"
-    
-    # Test that penv doesn't echo credentials
-    source "$DOTFILES_DIR/.config/zsh/functions.zsh"
-    pass() { mock_pass "$@"; }
-    
+
+    # Test that penv doesn't echo credentials (run in zsh subprocess)
     local penv_output
-    penv_output=$(penv aws/dev 2>&1)
-    
+    penv_output=$(run_penv_test 'penv aws/dev')
+
     # Output should not contain the actual credential values
     assert_not_contains "$penv_output" "AKIAIOSFODNN7EXAMPLE" "Should not echo access key value"
     assert_not_contains "$penv_output" "wJalrXUtnFEMI/K7MDENG" "Should not echo secret key value"
-    
+
     # But should confirm loading without showing values
     assert_contains "$penv_output" "AWS_ACCESS_KEY_ID loaded" "Should confirm loading without showing value"
 }
@@ -358,20 +399,19 @@ test_environment_isolation() {
 }
 
 test_concurrent_profile_handling() {
-    # Test handling of multiple AWS profiles
-    source "$DOTFILES_DIR/.config/zsh/functions.zsh"
-    pass() { mock_pass "$@"; }
-    
-    # Load one profile
-    penv aws/dev >/dev/null 2>&1
-    assert_equals "aws/dev" "$PENV_LOADED_PATH" "Should track dev profile"
-    
-    # Load different profile (should replace)
-    penv aws/staging >/dev/null 2>&1
-    assert_equals "aws/staging" "$PENV_LOADED_PATH" "Should track staging profile"
-    
-    # Verify new credentials loaded
-    assert_equals "AKIAIOSFODNN7STAGING" "$AWS_ACCESS_KEY_ID" "Should load staging credentials"
+    # Test handling of multiple AWS profiles in a single zsh subprocess
+    local output
+    output=$(run_penv_test '
+        penv aws/dev >/dev/null 2>&1
+        echo "LP1=${PENV_LOADED_PATH:-}"
+        penv aws/staging >/dev/null 2>&1
+        echo "LP2=${PENV_LOADED_PATH:-}"
+        echo "AK2=${AWS_ACCESS_KEY_ID:-}"
+    ')
+
+    assert_contains "$output" "LP1=aws/dev" "Should track dev profile"
+    assert_contains "$output" "LP2=aws/staging" "Should track staging profile"
+    assert_contains "$output" "AK2=AKIAIOSFODNN7STAGING" "Should load staging credentials"
 }
 
 # Run tests with setup/teardown

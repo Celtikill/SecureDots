@@ -89,7 +89,8 @@ FALLBACK_EOF
 fi
 
 source "$TEMP_FUNC"
-rm -f "$TEMP_FUNC"
+# Keep TEMP_FUNC for re-sourcing in subshells; clean up on exit
+trap 'rm -f "$TEMP_FUNC"' EXIT
 
 # Mock functions for testing
 mock_uname() {
@@ -104,87 +105,98 @@ mock_command() {
     return 1
 }
 
-# Test functions
+# Test functions — each calls detect_pinentry in a subshell with mocked uname
 test_macos_apple_silicon_detection() {
-    # Mock Apple Silicon Mac environment
-    MOCK_UNAME="Darwin"
-    
-    # Create temp directory structure
+    # Create temp directory structure to simulate Apple Silicon paths
     local temp_dir=$(mktemp -d)
-    mkdir -p "$temp_dir/opt/homebrew/bin"
-    touch "$temp_dir/opt/homebrew/bin/pinentry-mac"
-    
-    # Override file checks
-    _test_file_exists() {
-        case "$1" in
-            "/opt/homebrew/bin/pinentry-mac") return 0 ;;
-            *) return 1 ;;
-        esac
-    }
-    
-    # Run detection (simplified version)
+    mkdir -p "$temp_dir/bin"
+    touch "$temp_dir/bin/pinentry-mac"
+    chmod +x "$temp_dir/bin/pinentry-mac"
+
     local result
-    if [[ -f "/opt/homebrew/bin/pinentry-mac" ]] || _test_file_exists "/opt/homebrew/bin/pinentry-mac"; then
-        result="/opt/homebrew/bin/pinentry-mac"
-    fi
-    
-    # Clean up
+    result=$(
+        # Override uname to report Darwin
+        uname() { if [[ "$1" == "-s" ]]; then echo "Darwin"; else command uname "$@"; fi; }
+        export -f uname
+        # Override brew --prefix to point at temp dir
+        brew() { echo "$temp_dir"; }
+        export -f brew
+        source "$TEMP_FUNC"
+        detect_pinentry
+    )
+
     rm -rf "$temp_dir"
-    
-    assert_equals "/opt/homebrew/bin/pinentry-mac" "$result" "Should detect Apple Silicon pinentry path"
+
+    assert_equals "$temp_dir/bin/pinentry-mac" "$result" "Should detect Apple Silicon pinentry path"
 }
 
 test_macos_intel_detection() {
-    # Mock Intel Mac environment
-    MOCK_UNAME="Darwin"
-    
-    _test_file_exists() {
-        case "$1" in
-            "/usr/local/bin/pinentry-mac") return 0 ;;
-            *) return 1 ;;
-        esac
-    }
-    
+    # Create temp directory structure to simulate Intel Mac paths
+    local temp_dir=$(mktemp -d)
+    mkdir -p "$temp_dir/bin"
+    touch "$temp_dir/bin/pinentry-mac"
+    chmod +x "$temp_dir/bin/pinentry-mac"
+
     local result
-    if [[ -f "/usr/local/bin/pinentry-mac" ]] || _test_file_exists "/usr/local/bin/pinentry-mac"; then
-        result="/usr/local/bin/pinentry-mac"
-    fi
-    
-    assert_equals "/usr/local/bin/pinentry-mac" "$result" "Should detect Intel Mac pinentry path"
+    result=$(
+        uname() { if [[ "$1" == "-s" ]]; then echo "Darwin"; else command uname "$@"; fi; }
+        export -f uname
+        brew() { echo "$temp_dir"; }
+        export -f brew
+        source "$TEMP_FUNC"
+        detect_pinentry
+    )
+
+    rm -rf "$temp_dir"
+
+    assert_equals "$temp_dir/bin/pinentry-mac" "$result" "Should detect Intel Mac pinentry path"
 }
 
 test_linux_detection() {
-    # Mock Linux environment
-    MOCK_UNAME="Linux"
-    
-    _test_file_exists() {
-        case "$1" in
-            "/usr/bin/pinentry-curses") return 0 ;;
-            *) return 1 ;;
-        esac
-    }
-    
     local result
-    if [[ "$MOCK_UNAME" == "Linux" ]]; then
-        if _test_file_exists "/usr/bin/pinentry-curses"; then
-            result="/usr/bin/pinentry-curses"
-        fi
+    result=$(
+        # Override uname to report Linux
+        uname() { if [[ "$1" == "-s" ]]; then echo "Linux"; else command uname "$@"; fi; }
+        export -f uname
+        # Ensure brew is not found
+        brew() { return 1; }
+        export -f brew
+        source "$TEMP_FUNC"
+        detect_pinentry
+    )
+
+    # Assert based on what's actually available on this system
+    if [[ -x "/usr/bin/pinentry-curses" ]]; then
+        assert_equals "/usr/bin/pinentry-curses" "$result" "Should detect Linux pinentry-curses"
+    elif [[ -x "/usr/bin/pinentry-tty" ]]; then
+        assert_equals "/usr/bin/pinentry-tty" "$result" "Should detect Linux pinentry-tty"
+    elif [[ -x "/usr/bin/pinentry" ]]; then
+        assert_equals "/usr/bin/pinentry" "$result" "Should detect Linux pinentry"
+    else
+        assert_not_empty "$result" "Should detect some pinentry on Linux"
     fi
-    
-    assert_equals "/usr/bin/pinentry-curses" "$result" "Should detect Linux pinentry-curses"
 }
 
 test_fallback_detection() {
-    # Mock unknown platform
-    MOCK_UNAME="Unknown"
-    
-    _test_file_exists() {
-        return 1  # No files exist
-    }
-    
-    local result="/usr/bin/pinentry-curses"  # Default fallback
-    
-    assert_equals "/usr/bin/pinentry-curses" "$result" "Should fall back to default pinentry"
+    local result
+    local rc=0
+    result=$(
+        # Override uname to report unknown platform
+        uname() { if [[ "$1" == "-s" ]]; then echo "UnknownOS"; else command uname "$@"; fi; }
+        export -f uname
+        brew() { return 1; }
+        export -f brew
+        source "$TEMP_FUNC"
+        detect_pinentry
+    ) || rc=$?
+
+    # Unknown platform falls back to command -v pinentry or /usr/bin/pinentry
+    if command -v pinentry &>/dev/null || [[ -x "/usr/bin/pinentry" ]]; then
+        assert_not_empty "$result" "Should find pinentry via fallback on this system"
+    else
+        assert_equals "" "$result" "Should return empty when no pinentry available"
+        assert_not_equals "0" "$rc" "Should return non-zero when no pinentry found"
+    fi
 }
 
 test_aws_profile_config_loading() {

@@ -28,7 +28,10 @@ setup() {
 
 teardown() {
     cleanup_test_environment
+    rm -f /tmp/dotfiles_test_attempt_$$ 2>/dev/null || true
 }
+
+trap 'rm -f /tmp/dotfiles_test_attempt_$$ 2>/dev/null' EXIT
 
 # ===== Helper: run credential-process functions in isolation =====
 # Sources extracted function definitions, then runs the provided code.
@@ -37,11 +40,11 @@ teardown() {
 
 run_cred_func() {
     local func_body="$1"
-    bash -c "
-        export HOME='$TEST_HOME'
-        $CRED_FUNCTIONS
-        $func_body
-    " 2>&1
+    HOME="$TEST_HOME" bash <<CRED_EOF 2>&1
+export HOME
+$CRED_FUNCTIONS
+$func_body
+CRED_EOF
 }
 
 # ===== validate_profile =====

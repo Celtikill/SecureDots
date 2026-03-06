@@ -455,7 +455,7 @@ penv() {
         echo "Error: Invalid pass path format" >&2
         return 1
     fi
-    if [[ "$pass_path" =~ \.\. ]] || [[ "$pass_path" =~ ^[./] ]]; then
+    if [[ "$pass_path" == *'..'* ]] || [[ "$pass_path" == [./]* ]]; then
         echo "Error: Path traversal not allowed" >&2
         return 1
     fi
