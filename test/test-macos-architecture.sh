@@ -33,7 +33,7 @@ test_architecture_detection() {
     if [[ "$detected_arch" == "arm64" ]]; then
         assert_equals "arm64" "$uname_arch" "uname should match Homebrew detection for Apple Silicon"
     elif [[ "$detected_arch" == "x86_64" ]]; then
-        assert_true '[[ "$uname_arch" == "x86_64" || "$uname_arch" == "i386" ]]' "uname should match Intel detection"
+        assert_true "[[ '$uname_arch' == 'x86_64' || '$uname_arch' == 'i386' ]]" "uname should match Intel detection"
     fi
 }
 
