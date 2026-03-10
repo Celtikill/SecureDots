@@ -1,0 +1,1 @@
+test/test-platform-detection.sh

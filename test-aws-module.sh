@@ -1,0 +1,1 @@
+test/test-aws-module.sh

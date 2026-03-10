@@ -1,0 +1,1 @@
+test/test-credential-process.sh
