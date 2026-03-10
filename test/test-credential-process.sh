@@ -16,7 +16,8 @@ CRED_SCRIPT="$DOTFILES_DIR/.aws/credential-process.sh"
 
 # Extract function definitions once (everything before the final case statement).
 # This avoids re-running sed in every test and prevents main() execution.
-CRED_FUNCTIONS="$(sed -n '1,/^case/{ /^case/d; p }' "$CRED_SCRIPT")"
+# Use awk instead of sed for cross-platform compatibility (BSD sed vs GNU sed).
+CRED_FUNCTIONS="$(awk '/^case/{exit} {print}' "$CRED_SCRIPT")"
 
 # ===== Setup / Teardown =====
 
