@@ -1,0 +1,1 @@
+test/test-hardware-simulation.sh
